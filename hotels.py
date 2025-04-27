@@ -2,9 +2,16 @@ from fastapi import Query, Body, APIRouter
 from schemas.hotels import Hotel, HotelPATCH
 from typing import List
 
+DEFAULT_PER_PAGE = 3
+
 hotels = [
     {'id': 1, 'title': 'Hotel one', 'name': 'one'},
     {'id': 2, 'title': 'Sochi', 'name': 'sochi'},
+    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
+    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
+    {"id": 5, "title": "Москва", "name": "moscow"},
+    {"id": 6, "title": "Казань", "name": "kazan"},
+    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
 ]
 
 router = APIRouter(prefix='/hotels', tags=['Hotels'])
@@ -13,6 +20,8 @@ router = APIRouter(prefix='/hotels', tags=['Hotels'])
 async def get_hotels(
         id: int | None = Query(None, description='Hotel id'),
         title: str | None = Query(None, description='Hotel title'),
+        page: int = Query(1, ge=1, description='Page'),
+        per_page: int = Query(DEFAULT_PER_PAGE, ge=1, description='Per page'),
 ) -> List[dict]:
     result = []
     for hotel in hotels:
@@ -21,7 +30,9 @@ async def get_hotels(
         if title and hotel['title'] != title:
             continue
         result.append(hotel)
-    return result
+
+    start = 0 if page == 1 else (page - 1) * per_page
+    return result[start: start + per_page]
 
 
 @router.delete('/{hotel_id}')
