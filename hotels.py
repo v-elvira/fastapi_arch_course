@@ -1,11 +1,11 @@
 from fastapi import Query, Body, APIRouter
+from schemas.hotels import Hotel, HotelPATCH
 from typing import List
 
 hotels = [
     {'id': 1, 'title': 'Hotel one', 'name': 'one'},
     {'id': 2, 'title': 'Sochi', 'name': 'sochi'},
 ]
-
 
 router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
@@ -32,25 +32,21 @@ async def delete_hotel(hotel_id: int) -> dict:
 
 
 @router.post('')
-async def create_hotel(
-        title: str = Body(embed=True),
-        name: str = Body(),
-) -> dict:
+async def create_hotel(hotel_data: Hotel) -> dict:
     global hotels
-    hotels.append({'id': hotels[-1]['id']+1, 'title': title, 'name': name})
+    hotels.append({'id': hotels[-1]['id']+1, 'title': hotel_data.title, 'name': hotel_data.name})
     return {'status': 'OK'}
 
 
 @router.put('/{hotel_id}')
 async def replace_hotel(
         hotel_id: int,
-        title: str = Body(),
-        name: str = Body(),
+        hotel_data: Hotel,
 ) -> dict:
     for hotel in hotels:
         if hotel['id'] == hotel_id:
-            hotel['name'] = name
-            hotel['title'] = title
+            hotel['name'] = hotel_data.name
+            hotel['title'] = hotel_data.title
             return {'status': 'OK'}
     return {'status': 'Hotel not found'}
 
@@ -58,14 +54,13 @@ async def replace_hotel(
 @router.patch('/{hotel_id}')
 async def edit_hotel(
         hotel_id: int,
-        title: str | None = Body(None),
-        name: str | None = Body(None),
+        hotel_data: HotelPATCH,
 ) -> dict:
     for hotel in hotels:
         if hotel['id'] == hotel_id:
-            if name:
-                hotel['name'] = name
-            if title:
-                hotel['title'] = title
+            if hotel_data.name:
+                hotel['name'] = hotel_data.name
+            if hotel_data.title:
+                hotel['title'] = hotel_data.title
             return {'status': 'OK'}
     return {'status': 'Hotel not found'}
