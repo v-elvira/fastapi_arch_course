@@ -32,7 +32,24 @@ async def delete_hotel(hotel_id: int) -> dict:
 
 
 @router.post('')
-async def create_hotel(hotel_data: Hotel) -> dict:
+async def create_hotel(hotel_data: Hotel = Body(
+    openapi_examples={
+        "1": {
+            "summary": "Сочи",
+            "value": {
+                "title": "Отель Сочи 5 звезд у моря",
+                "name": "sochi_u_morya",
+            }
+        },
+        "2": {
+            "summary": "Дубай",
+            "value": {
+                "title": "Отель Дубай У фонтана",
+                "name": "dubai_fountain",
+            }
+        }
+    }
+)) -> dict:
     global hotels
     hotels.append({'id': hotels[-1]['id']+1, 'title': hotel_data.title, 'name': hotel_data.name})
     return {'status': 'OK'}
