@@ -1,7 +1,8 @@
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 
-from schemas.hotels import Hotel, HotelPATCH, PaginationDep
+from dependencies import PaginationDep
+from schemas.hotels import Hotel, HotelPATCH
 from typing import List
 
 hotels = [
