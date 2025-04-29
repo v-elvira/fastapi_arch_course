@@ -1,6 +1,6 @@
-from fastapi import Query, Body, APIRouter
+from fastapi import Depends, Body, APIRouter
 from schemas.hotels import Hotel, HotelPATCH, HotelGET
-from typing import List
+from typing import Annotated, List
 
 hotels = [
     {'id': 1, 'title': 'Hotel one', 'name': 'one'},
@@ -16,13 +16,9 @@ router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
 @router.get('')
 async def get_hotels(
-        id: int | None = Query(None, description='Hotel id'),
-        title: str | None = Query(None, description='Hotel title'),
-        page: int = Query(1, ge=1, description='Page'),
-        per_page: int | None = Query(None, ge=1, description='Per page'),
+        params: Annotated[HotelGET, Depends()]
 ) -> List[dict]:
     result = []
-    params = HotelGET(id=id, title=title, page=page, per_page=per_page)
     for hotel in hotels:
         if params.id and hotel['id'] != params.id:
             continue

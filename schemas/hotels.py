@@ -1,4 +1,6 @@
+from fastapi import Query
 from pydantic import BaseModel, Field, model_validator, computed_field
+from typing import Annotated
 
 DEFAULT_PER_PAGE = 3
 
@@ -11,10 +13,10 @@ class HotelPATCH(BaseModel):
     name: str | None = Field(None)
 
 class HotelGET(BaseModel):
-    id: int | None = None
-    title: str | None = Field(default=None)
-    page: int = Field(default=1, ge=1)
-    per_page: int | None = Field(None, ge=1)
+    id: Annotated[int | None, Query(None)]
+    title: Annotated[str | None, Query(default=None)]
+    page: Annotated[int, Query(1, ge=1)]
+    per_page: Annotated[int | None, Query(default=None, ge=1)]
 
     @model_validator(mode='after')
     def default_per_page(self):
