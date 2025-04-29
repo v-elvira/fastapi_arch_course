@@ -1,4 +1,4 @@
-from fastapi import Query
+from fastapi import Query, Depends
 from pydantic import BaseModel, Field, model_validator, computed_field
 from typing import Annotated
 
@@ -12,9 +12,7 @@ class HotelPATCH(BaseModel):
     title: str | None = None
     name: str | None = Field(None)
 
-class HotelGET(BaseModel):
-    id: Annotated[int | None, Query(None)]
-    title: Annotated[str | None, Query(default=None)]
+class PaginationParams(BaseModel):
     page: Annotated[int, Query(1, ge=1)]
     per_page: Annotated[int | None, Query(default=None, ge=1)]
 
@@ -29,3 +27,5 @@ class HotelGET(BaseModel):
         if self.page > 1:
             return (self.page - 1) * self.per_page
         return 0
+
+PaginationDep = Annotated[PaginationParams, Depends()]

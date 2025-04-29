@@ -1,6 +1,8 @@
-from fastapi import Depends, Body, APIRouter
-from schemas.hotels import Hotel, HotelPATCH, HotelGET
-from typing import Annotated, List
+from fastapi import Body, APIRouter
+from fastapi.params import Query
+
+from schemas.hotels import Hotel, HotelPATCH, PaginationDep
+from typing import List
 
 hotels = [
     {'id': 1, 'title': 'Hotel one', 'name': 'one'},
@@ -16,19 +18,21 @@ router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
 @router.get('')
 async def get_hotels(
-        params: Annotated[HotelGET, Depends()]
+        pagination: PaginationDep,
+        id: int | None = Query(None, description='Id'),
+        title: str | None = Query(None, description='Hotel title'),
 ) -> List[dict]:
     result = []
     for hotel in hotels:
-        if params.id and hotel['id'] != params.id:
+        if id and hotel['id'] != id:
             continue
-        if params.title and hotel['title'] != params.title:
+        if title and hotel['title'] != title:
             continue
         result.append(hotel)
 
-    if params.per_page:
-        return result[params.start: params.start + params.per_page]
-    return result[params.start:]
+    if pagination.per_page:
+        return result[pagination.start: pagination.start + pagination.per_page]
+    return result[pagination.start:]
 
 
 @router.delete('/{hotel_id}')
