@@ -12,6 +12,7 @@ class PaginationParams(BaseModel):
     def default_per_page(self):
         if self.page > 1 and not self.per_page:
             self.per_page = DEFAULT_PER_PAGE
+        return self
 
     @computed_field
     @property
