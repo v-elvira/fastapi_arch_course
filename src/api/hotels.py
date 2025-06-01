@@ -1,26 +1,16 @@
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPATCH
 
 from src.database import async_session_maker
-# from src.database import engine
+from src.database import engine
 from src.models.hotels import HotelsORM
 
 from typing import List
-
-hotels = [
-    {'id': 1, 'title': 'Hotel one', 'name': 'one'},
-    {'id': 2, 'title': 'Sochi', 'name': 'sochi'},
-    {"id": 3, "title": "Мальдивы", "name": "maldivi"},
-    {"id": 4, "title": "Геленджик", "name": "gelendzhik"},
-    {"id": 5, "title": "Москва", "name": "moscow"},
-    {"id": 6, "title": "Казань", "name": "kazan"},
-    {"id": 7, "title": "Санкт-Петербург", "name": "spb"},
-]
 
 router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
@@ -29,18 +19,29 @@ async def get_hotels(
         pagination: PaginationDep,
         id: int | None = Query(None, description='Id'),
         title: str | None = Query(None, description='Hotel title'),
-) -> List[dict]:
-    result = []
-    for hotel in hotels:
-        if id and hotel['id'] != id:
-            continue
-        if title and hotel['title'] != title:
-            continue
-        result.append(hotel)
+) -> List[Hotel]:
+    per_page = pagination.per_page or 5
+    async with async_session_maker() as session:
+        query = select(HotelsORM)
+        if id:
+            query = query.filter_by(id=id)
+        if title:
+            query = query.filter_by(title=title)
+        query = (query
+                 .limit(per_page)
+                 .offset(pagination.start)
+                 )
+        print(f'Q: {query.compile(engine, compile_kwargs = {'literal_binds': True})}')
+        #Q: SELECT hotels.id, hotels.title, hotels.location FROM hotels +- WHERE ... +- AND ...
 
-    if pagination.per_page:
-        return result[pagination.start: pagination.start + pagination.per_page]
-    return result[pagination.start:]
+        result = await session.execute(query)
+        # print(f'1: {result}')              # <sqlalchemy.engine.result.ChunkedIteratorResult object at 0x7f5da2034b90>
+        # print(f'2: {result.all()}')            # [(<src.models.hotels.HotelsORM object at 0x7fab83f1f380>,), ...
+        # print(f'3: {result.scalars()}')        # <sqlalchemy.engine.result.ScalarResult object at 0x7f5da2024140>
+        # print(f'4: {result.scalars().all()}')    # [<src.models.hotels.HotelsORM object at 0x7f8b4987f050>, ...
+        # WILL BE EMPTY IF called twice
+    hotels = result.scalars().all()
+    return hotels
 
 
 @router.delete('/{hotel_id}')
