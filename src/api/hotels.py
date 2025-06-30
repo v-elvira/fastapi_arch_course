@@ -47,13 +47,13 @@ async def create_hotel(hotel_data: Hotel = Body(
             }
         }
     }
-)) -> dict:
+)):
+# )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
     async with (async_session_maker() as session):
         hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
 
-    return {'status': 'OK', 'data': {'id': hotel.id, 'title': hotel.title, 'location': hotel.location}}
-
+    return {'status': 'OK', 'data': hotel}
 
 @router.put('/{hotel_id}')
 async def replace_hotel(
