@@ -1,14 +1,11 @@
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 
-from sqlalchemy import insert
-
 from src.repositories.hotels import HotelsRepository
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPATCH
 
 from src.database import async_session_maker
-from src.models.hotels import HotelsORM
 
 from typing import List
 
@@ -52,23 +49,10 @@ async def create_hotel(hotel_data: Hotel = Body(
     }
 )) -> dict:
     async with (async_session_maker() as session):
-        add_hotel_stmt = insert(HotelsORM).values(**hotel_data.model_dump())
-        # # for DEBUG:
-        # print(f'1: {add_hotel_stmt}')
-        # # INSERT INTO hotels (title, location) VALUES (:title, :location)
-        # print(f'2: {add_hotel_stmt.compile()}')
-        # # INSERT INTO hotels (title, location) VALUES (:title, :location)
-        #
-        # print(f'3: {add_hotel_stmt.compile(engine)}')  # engine for DB dialect (RETURNING in postgres)
-        # # INSERT INTO hotels (title, location) VALUES ($1::VARCHAR, $2::VARCHAR) RETURNING hotels.id
-        #
-        # print(f'4: {add_hotel_stmt.compile(engine, compile_kwargs={'literal_binds': True})}')
-        # # INSERT INTO hotels (title, location) VALUES ('Отель Сочи 5 звезд у моря', 'Sochi, Main, 6') RETURNING hotels.id
-
-        await session.execute(add_hotel_stmt)
+        hotel = await HotelsRepository(session).add(hotel_data)
         await session.commit()
 
-    return {'status': 'OK'}
+    return {'status': 'OK', 'data': {'id': hotel.id, 'title': hotel.title, 'location': hotel.location}}
 
 
 @router.put('/{hotel_id}')
