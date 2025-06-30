@@ -1,7 +1,7 @@
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, func
 
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPATCH
@@ -24,9 +24,9 @@ async def get_hotels(
     async with async_session_maker() as session:
         query = select(HotelsORM)
         if title:
-            query = query.filter(HotelsORM.title.like(f'%{title}%'))
+            query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
         if location:
-            query = query.filter(HotelsORM.location.like(f'%{location}%'))
+            query = query.filter(func.lower(HotelsORM.location).contains(location.lower()))
         query = (query
                  .limit(per_page)
                  .offset(pagination.start)
