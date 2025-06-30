@@ -3,6 +3,7 @@ from fastapi.params import Query
 
 from sqlalchemy import insert, select, func
 
+from src.repositories.hotels import HotelsRepository
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPATCH
 
@@ -22,26 +23,7 @@ async def get_hotels(
 ) -> List[Hotel]:
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
-        query = select(HotelsORM)
-        if title:
-            query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
-        if location:
-            query = query.filter(func.lower(HotelsORM.location).contains(location.lower()))
-        query = (query
-                 .limit(per_page)
-                 .offset(pagination.start)
-                 )
-        print(f'Q: {query.compile(engine, compile_kwargs = {'literal_binds': True})}')
-        #Q: SELECT hotels.id, hotels.title, hotels.location FROM hotels +- WHERE ... +- AND ...
-
-        result = await session.execute(query)
-        # print(f'1: {result}')              # <sqlalchemy.engine.result.ChunkedIteratorResult object at 0x7f5da2034b90>
-        # print(f'2: {result.all()}')            # [(<src.models.hotels.HotelsORM object at 0x7fab83f1f380>,), ...
-        # print(f'3: {result.scalars()}')        # <sqlalchemy.engine.result.ScalarResult object at 0x7f5da2024140>
-        # print(f'4: {result.scalars().all()}')    # [<src.models.hotels.HotelsORM object at 0x7f8b4987f050>, ...
-        # WILL BE EMPTY IF called twice
-    hotels = result.scalars().all()
-    return hotels
+        return await HotelsRepository(session).get_all()
 
 
 @router.delete('/{hotel_id}')
