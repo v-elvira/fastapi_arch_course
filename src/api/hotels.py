@@ -1,14 +1,13 @@
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 
-from sqlalchemy import insert, select, func
+from sqlalchemy import insert
 
 from src.repositories.hotels import HotelsRepository
 from src.api.dependencies import PaginationDep
 from src.schemas.hotels import Hotel, HotelPATCH
 
 from src.database import async_session_maker
-from src.database import engine
 from src.models.hotels import HotelsORM
 
 from typing import List
@@ -23,7 +22,7 @@ async def get_hotels(
 ) -> List[Hotel]:
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
-        return await HotelsRepository(session).get_all()
+        return await HotelsRepository(session).get_all(location, title, per_page, pagination.start)
 
 
 @router.delete('/{hotel_id}')
