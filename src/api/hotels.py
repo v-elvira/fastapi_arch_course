@@ -24,8 +24,9 @@ async def get_hotels(
 
 @router.delete('/{hotel_id}')
 async def delete_hotel(hotel_id: int) -> dict:
-    global hotels
-    hotels = [hotel for hotel in hotels if hotel['id'] != hotel_id]
+    async with async_session_maker() as session:
+        await HotelsRepository(session).delete(id=hotel_id)
+        await session.commit()
     return {'status': 'OK'}
 
 
@@ -59,13 +60,11 @@ async def create_hotel(hotel_data: Hotel = Body(
 async def replace_hotel(
         hotel_id: int,
         hotel_data: Hotel,
-) -> dict:
-    for hotel in hotels:
-        if hotel['id'] == hotel_id:
-            hotel['name'] = hotel_data.name
-            hotel['title'] = hotel_data.title
-            return {'status': 'OK'}
-    return {'status': 'Hotel not found'}
+):
+    async with async_session_maker() as session:
+        hotel = await HotelsRepository(session).edit(hotel_data, id=hotel_id)
+        await session.commit()
+    return {'status': 'OK', 'new_hotel': hotel}
 
 
 @router.patch('/{hotel_id}')
