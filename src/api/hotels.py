@@ -16,7 +16,7 @@ async def get_hotels(
         pagination: PaginationDep,
         title: str | None = Query(None, description='Hotel title'),
         location: str | None = Query(None, description='Location fragment'),
-) -> List[Hotel]:
+):  # -> List[Hotel]: (will be casted to Hotel schema (with to id))
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
         return await HotelsRepository(session).get_all(location, title, per_page, pagination.start)
