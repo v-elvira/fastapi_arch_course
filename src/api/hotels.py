@@ -22,6 +22,12 @@ async def get_hotels(
         return await HotelsRepository(session).get_all(location, title, per_page, pagination.start)
 
 
+@router.get('/{hotel_id}')
+async def get_hotel(hotel_id: int):
+    async with async_session_maker() as session:
+        return await HotelsRepository(session).get_one_or_none(id=hotel_id)
+
+
 @router.delete('/{hotel_id}')
 async def delete_hotel(hotel_id: int) -> dict:
     async with async_session_maker() as session:
