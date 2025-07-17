@@ -3,7 +3,7 @@ from fastapi.params import Query
 
 from src.repositories.hotels import HotelsRepository
 from src.api.dependencies import PaginationDep
-from src.schemas.hotels import Hotel, HotelPATCH
+from src.schemas.hotels import HotelAdd, HotelPATCH, Hotel
 
 from src.database import async_session_maker
 
@@ -16,14 +16,14 @@ async def get_hotels(
         pagination: PaginationDep,
         title: str | None = Query(None, description='Hotel title'),
         location: str | None = Query(None, description='Location fragment'),
-):  # -> List[Hotel]: (will be casted to Hotel schema (with to id))
+) -> List[Hotel]:
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
         return await HotelsRepository(session).get_all(location, title, per_page, pagination.start)
 
 
 @router.get('/{hotel_id}')
-async def get_hotel(hotel_id: int):
+async def get_hotel(hotel_id: int) -> Hotel:
     async with async_session_maker() as session:
         return await HotelsRepository(session).get_one_or_none(id=hotel_id)
 
@@ -37,7 +37,7 @@ async def delete_hotel(hotel_id: int) -> dict:
 
 
 @router.post('')
-async def create_hotel(hotel_data: Hotel = Body(
+async def create_hotel(hotel_data: HotelAdd = Body(
     openapi_examples={
         "1": {
             "summary": "Сочи",
@@ -54,7 +54,7 @@ async def create_hotel(hotel_data: Hotel = Body(
             }
         }
     }
-)):
+)) -> dict:
 # )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
     async with (async_session_maker() as session):
         hotel = await HotelsRepository(session).add(hotel_data)
@@ -65,8 +65,8 @@ async def create_hotel(hotel_data: Hotel = Body(
 @router.put('/{hotel_id}')
 async def replace_hotel(
         hotel_id: int,
-        hotel_data: Hotel,
-):
+        hotel_data: HotelAdd,
+) -> dict[str, Hotel | str]:
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).edit(hotel_data, id=hotel_id)
         await session.commit()
@@ -77,7 +77,7 @@ async def replace_hotel(
 async def edit_hotel(
         hotel_id: int,
         hotel_data: HotelPATCH,
-):
+) -> dict[str, Hotel | str]:
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).edit(hotel_data, exclude_unset=True, id=hotel_id)
         await session.commit()

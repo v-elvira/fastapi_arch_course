@@ -1,9 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+from src.schemas.common import CommonBaseModel
 
-class Hotel(BaseModel):
+
+class HotelAdd(CommonBaseModel):
     title: str
     location: str
 
-class HotelPATCH(BaseModel):
+class Hotel(HotelAdd):
+    id: int
+
+class HotelPATCH(CommonBaseModel):
     title: str | None = None
     location: str | None = Field(None)
