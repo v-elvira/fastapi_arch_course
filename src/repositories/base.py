@@ -1,4 +1,5 @@
 from sqlalchemy import select, insert, update, delete
+from sqlalchemy.exc import IntegrityError
 from src.schemas.common import CommonBaseModel
 from src.database import Base
 
@@ -31,7 +32,10 @@ class BaseRepository:
     async def add(self, model_data: CommonBaseModel):
         add_stmt = insert(self.model).values(**model_data.model_dump()).returning(self.model)
         print(add_stmt.compile(compile_kwargs={'literal_binds': True}))
-        result = await self.session.execute(add_stmt)
+        try:
+            result = await self.session.execute(add_stmt)
+        except IntegrityError:
+            return
         return self.schema.model_validate(result.scalars().one())
 
     async def edit(self, model_data: CommonBaseModel, exclude_unset=False, **filter_by):
