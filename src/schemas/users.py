@@ -12,3 +12,6 @@ class UserAdd(CommonBaseModel):
 class User(CommonBaseModel):
     id: int
     email: EmailStr
+
+class UserWithHashedPassword(User):
+    hashed_password: str
