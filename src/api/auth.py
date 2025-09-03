@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Response, status, HTTPException, Request
 
+from src.api.dependencies import UserIdDep
 from src.database import async_session_maker
 from src.schemas.users import UserRequestAdd, UserAdd, User
 from src.repositories.users import UsersRepository
 from src.services.auth import AuthService
 
-router = APIRouter(prefix='/auth', tags=['User auth'])
+router = APIRouter(prefix='/auth', tags=['User auth']) #, dependencies=...) for the whole route Deps
 
 @router.post('/login')
 async def login_user(user_data: UserRequestAdd, response: Response) -> dict:
@@ -32,10 +33,7 @@ async def register(user_data: UserRequestAdd, response: Response) -> dict[str, s
     return {'status': 'OK', 'user': user}
 
 @router.get('/only_auth')
-async def only_auth(request: Request) -> User | None:
-    access_token = request.cookies.get('access_token')
-    data = AuthService().decode_token(access_token)
-    user_id = data['user_id']
+async def only_auth(user_id: UserIdDep) -> User | None:
     async with async_session_maker() as session:
         user = await UsersRepository(session).get_one_or_none(id=user_id)
         return user

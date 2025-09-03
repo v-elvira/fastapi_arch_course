@@ -1,6 +1,9 @@
-from fastapi import Query, Depends
+import jwt
+from fastapi import Query, Depends, Request
 from pydantic import BaseModel, model_validator, computed_field
 from typing import Annotated
+
+from src.services.auth import AuthService
 
 DEFAULT_PER_PAGE = 3
 
@@ -22,3 +25,12 @@ class PaginationParams(BaseModel):
         return 0
 
 PaginationDep = Annotated[PaginationParams, Depends()]
+
+
+
+def get_current_user_id(request: Request) -> int:
+    access_token = request.cookies.get('access_token')
+    data = AuthService().decode_token(access_token)
+    return data['user_id']
+
+UserIdDep = Annotated[int, Depends(get_current_user_id)]
