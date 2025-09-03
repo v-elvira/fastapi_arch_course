@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, HTTPException, Request
 
 from src.database import async_session_maker
 from src.schemas.users import UserRequestAdd, UserAdd, User
@@ -30,3 +30,8 @@ async def register(user_data: UserRequestAdd, response: Response) -> dict[str, s
             return {'status': f'Failed: user with email {user_data.email} already exists'}
         await session.commit()
     return {'status': 'OK', 'user': user}
+
+@router.get('/only_auth')
+async def only_auth(request: Request) -> dict:
+    access_token = request.cookies.get('access_token')
+    return {'token_from_request': access_token}
