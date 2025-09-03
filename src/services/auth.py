@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 import jwt  # PyJWT in requirements
+from fastapi import HTTPException
 
 from passlib.context import CryptContext
 from src.config import settings
@@ -21,3 +22,9 @@ class AuthService:
         to_encode |= {'exp': expire}
         encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
         return encoded_jwt
+
+    def decode_token(self, token: str) -> dict:
+        try:
+            return jwt.decode(token, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        except jwt.DecodeError:
+            raise HTTPException(status_code=401, detail='Invalid token')

@@ -32,6 +32,10 @@ async def register(user_data: UserRequestAdd, response: Response) -> dict[str, s
     return {'status': 'OK', 'user': user}
 
 @router.get('/only_auth')
-async def only_auth(request: Request) -> dict:
+async def only_auth(request: Request) -> User | None:
     access_token = request.cookies.get('access_token')
-    return {'token_from_request': access_token}
+    data = AuthService().decode_token(access_token)
+    user_id = data['user_id']
+    async with async_session_maker() as session:
+        user = await UsersRepository(session).get_one_or_none(id=user_id)
+        return user
