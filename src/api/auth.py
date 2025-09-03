@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, status, HTTPException, Request
+from fastapi import APIRouter, Response, status, HTTPException
 
 from src.api.dependencies import UserIdDep
 from src.database import async_session_maker
@@ -32,8 +32,8 @@ async def register(user_data: UserRequestAdd, response: Response) -> dict[str, s
         await session.commit()
     return {'status': 'OK', 'user': user}
 
-@router.get('/only_auth')
-async def only_auth(user_id: UserIdDep) -> User | None:
+@router.get('/me')
+async def get_me(user_id: UserIdDep) -> User | None:
     async with async_session_maker() as session:
         user = await UsersRepository(session).get_one_or_none(id=user_id)
         return user

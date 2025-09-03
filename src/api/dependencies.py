@@ -1,5 +1,4 @@
-import jwt
-from fastapi import Query, Depends, Request
+from fastapi import Query, Depends, Request, HTTPException
 from pydantic import BaseModel, model_validator, computed_field
 from typing import Annotated
 
@@ -26,11 +25,15 @@ class PaginationParams(BaseModel):
 
 PaginationDep = Annotated[PaginationParams, Depends()]
 
+def get_token(request: Request) -> str:
+    token = request.cookies.get('access_token')
+    if not token:
+        raise HTTPException(status_code=401, detail='No token provided')
+    return token
 
-
-def get_current_user_id(request: Request) -> int:
-    access_token = request.cookies.get('access_token')
-    data = AuthService().decode_token(access_token)
+def get_current_user_id(token: Annotated[str, Depends(get_token)]) -> int:
+# def get_current_user_id(token: str = Depends(get_token)) -> int:  # same, ok
+    data = AuthService().decode_token(token)
     return data['user_id']
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
