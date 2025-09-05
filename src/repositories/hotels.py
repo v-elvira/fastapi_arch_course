@@ -9,7 +9,7 @@ class HotelsRepository(BaseRepository):
     schema = Hotel
 
     async def get_all(self, location, title, limit, offset):
-        query = select(HotelsORM)
+        query = select(self.model)
         if title:
             query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
         if location:
