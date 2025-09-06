@@ -3,7 +3,7 @@ from fastapi.params import Query
 
 from src.repositories.hotels import HotelsRepository
 from src.api.dependencies import PaginationDep
-from src.schemas.hotels import HotelAdd, HotelPATCH, Hotel
+from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 
 from src.database import async_session_maker
 
@@ -76,7 +76,7 @@ async def replace_hotel(
 @router.patch('/{hotel_id}')
 async def edit_hotel(
         hotel_id: int,
-        hotel_data: HotelPATCH,
+        hotel_data: HotelPatch,
 ) -> dict[str, Hotel | str]:
     async with async_session_maker() as session:
         hotel = await HotelsRepository(session).edit(hotel_data, exclude_unset=True, id=hotel_id)

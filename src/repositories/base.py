@@ -10,8 +10,8 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_all(self, *args, **kwargs):
-        query = select(self.model)
+    async def get_filtered(self, **filter_by):
+        query = select(self.model).filter_by(**filter_by)
         result_db = await self.session.execute(query)
         #result = [self.schema.model_validate(item, from_attributes=True) for item in result_orm.scalars().all()]  # ok
 
@@ -20,6 +20,9 @@ class BaseRepository:
 
         result = [self.schema.model_validate(item) for item in result_db.scalars().all()]
         return result
+
+    async def get_all(self, *args, **kwargs):
+        return await self.get_filtered()
 
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)

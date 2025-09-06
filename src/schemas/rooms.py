@@ -12,7 +12,7 @@ class RoomAdd(RoomAddBody):
 class Room(RoomAdd):
     id: int
 
-class RoomPATCH(CommonBaseModel):
+class RoomPatch(CommonBaseModel):
     title: str | None = None
     description: str | None = None
     price: int | None = None

@@ -9,6 +9,6 @@ class HotelAdd(CommonBaseModel):
 class Hotel(HotelAdd):
     id: int
 
-class HotelPATCH(CommonBaseModel):
+class HotelPatch(CommonBaseModel):
     title: str | None = None
     location: str | None = Field(None)

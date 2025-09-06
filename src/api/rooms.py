@@ -3,7 +3,7 @@ from fastapi.params import Query, Path
 
 from src.repositories.hotels import HotelsRepository
 from src.repositories.rooms import RoomsRepository
-from src.schemas.rooms import RoomAdd, RoomPATCH, Room, RoomAddBody
+from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody
 
 from src.database import async_session_maker
 
@@ -13,7 +13,7 @@ router = APIRouter(prefix='/hotels', tags=['Rooms'])
 
 @router.get('/{hotel_id}/rooms')
 async def get_rooms(
-        hotel_id: int | None = Path(description='Hotel id'),
+        hotel_id: int = Path(description='Hotel id'),
         title: str | None = Query(None, description='Room title'),
         description: str | None = Query(None, description='Room description'),
         price: int | None = Query(None, description='Room price'),
@@ -63,9 +63,7 @@ async def create_room(hotel_id: int, room_data: RoomAddBody = Body(
     async with (async_session_maker() as session):
         if not await HotelsRepository(session).get_one_or_none(id=hotel_id):
             raise HTTPException(status_code=404, detail='Hotel not found. Failed to create room')
-        room_dict = RoomAddBody.model_dump(room_data)
-        room_dict['hotel_id'] = hotel_id
-        room_data = RoomAdd.model_validate(room_dict)
+        room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
         room = await RoomsRepository(session).add(room_data)
         await session.commit()
 
@@ -89,7 +87,7 @@ async def replace_room(
 async def edit_room(
         hotel_id: int,
         room_id: int,
-        room_data: RoomPATCH,
+        room_data: RoomPatch,
 ) -> dict[str, Room | str]:
     async with async_session_maker() as session:
         if not await RoomsRepository(session).get_one_or_none(hotel_id=hotel_id, id=room_id):
