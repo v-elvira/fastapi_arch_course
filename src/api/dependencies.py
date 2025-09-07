@@ -3,6 +3,9 @@ from pydantic import BaseModel, model_validator, computed_field
 from typing import Annotated
 
 from src.services.auth import AuthService
+from src.database import async_session_maker
+from src.utils.db_manager import DBManager
+
 
 DEFAULT_PER_PAGE = 3
 
@@ -37,3 +40,9 @@ def get_current_user_id(token: Annotated[str, Depends(get_token)]) -> int:
     return data['user_id']
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
+
+async def get_db():
+    async with DBManager(session_factory=async_session_maker) as db:
+        yield db
+
+DBDep = Annotated[DBManager, Depends(get_db)]
