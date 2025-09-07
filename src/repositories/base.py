@@ -37,7 +37,7 @@ class BaseRepository:
         print(add_stmt.compile(compile_kwargs={'literal_binds': True}))
         try:
             result = await self.session.execute(add_stmt)
-        except IntegrityError:
+        except IntegrityError:  # not good
             return
         return self.schema.model_validate(result.scalars().one())
 

@@ -9,6 +9,7 @@ print(sys.path) # was already there? # +2 times in the end (not in __main__ => o
 from src.api.hotels import router as router_hotels
 from src.api.auth import router as router_auth
 from src.api.rooms import router as router_rooms
+from src.api.bookings import router as router_bookings
 from src.config import settings
 
 print(f'DB_NAME: {settings.DB_NAME}')
@@ -17,6 +18,7 @@ app = FastAPI()
 app.include_router(router_auth)
 app.include_router(router_hotels)
 app.include_router(router_rooms)
+app.include_router(router_bookings)
 
 @app.get('/', name='Home page')
 async def index() -> dict:
