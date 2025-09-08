@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import Body, APIRouter, HTTPException
 
 from src.api.dependencies import DBDep, UserIdDep
@@ -6,7 +7,7 @@ from src.schemas.bookings import Booking, BookingAdd, BookingAddBody
 
 router = APIRouter(prefix='/bookings', tags=['Bookings'])
 
-@router.post('/bookings', status_code=201)
+@router.post('', status_code=201)
 async def create_booking(
         db: DBDep,
         user_id: UserIdDep,
@@ -21,3 +22,18 @@ async def create_booking(
         raise HTTPException(status_code=400, detail='Failed to create booking')
     await db.session.commit()
     return {'status': 'OK', 'data': booking}
+
+
+@router.get('')
+async def get_all_bookings(
+        db: DBDep,
+) -> List[Booking]:
+    return await db.bookings.get_all()
+
+
+@router.get('/me')
+async def get_my_bookings(
+        db: DBDep,
+        user_id: UserIdDep
+) -> List[Booking]:
+    return await db.bookings.get_filtered(user_id=user_id)
