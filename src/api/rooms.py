@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import Body, APIRouter, HTTPException
 from fastapi.params import Query, Path
 
@@ -8,16 +9,25 @@ from typing import List
 
 router = APIRouter(prefix='/hotels', tags=['Rooms'])
 
+# @router.get('/{hotel_id}/rooms')
+# async def get_rooms(
+#         db: DBDep,
+#         hotel_id: int = Path(description='Hotel id'),
+#         title: str | None = Query(None, description='Room title'),
+#         description: str | None = Query(None, description='Room description'),
+#         price: int | None = Query(None, description='Room price'),
+#         quantity: int | None = Query(None, description='Room quantity'),
+# ) -> List[Room]:
+#     return await db.rooms.get_all(hotel_id, title, description, price, quantity)
+
 @router.get('/{hotel_id}/rooms')
 async def get_rooms(
         db: DBDep,
         hotel_id: int = Path(description='Hotel id'),
-        title: str | None = Query(None, description='Room title'),
-        description: str | None = Query(None, description='Room description'),
-        price: int | None = Query(None, description='Room price'),
-        quantity: int | None = Query(None, description='Room quantity'),
-) -> List[Room]:
-    return await db.rooms.get_all(hotel_id, title, description, price, quantity)
+        date_from: date = Query(example='2024-09-01'),
+        date_to: date = Query(example='2025-12-01'),
+): #-> List[Room]:
+    return await db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
 
 @router.get('/{hotel_id}/rooms/{room_id}')
