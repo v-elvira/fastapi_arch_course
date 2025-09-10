@@ -29,21 +29,21 @@ class HotelsRepository(BaseRepository):
             .filter(RoomsORM.id.in_(free_room_ids))
         )
 
-        # if title or location:
-        #    free_hotel_ids = free_hotel_ids.join(HotelsORM, free_hotel_ids.c.hotel_id == HotelsORM.id)
-
-        ## sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <
-        ## class 'asyncpg.exceptions.UndefinedTableError'>: missing FROM - clause entry for table "anon_1"
-        ##  ---- OK without it
-
+        query = (
+            select(HotelsORM)
+            .select_from(HotelsORM)
+            .filter(HotelsORM.id.in_(free_hotel_ids))
+        )
         if title:
-            free_hotel_ids = free_hotel_ids.filter(func.lower(HotelsORM.title).contains(title.lower()))
+            query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
         if location:
-            free_hotel_ids = free_hotel_ids.filter(func.lower(HotelsORM.location).contains(location.lower()))
-        free_hotel_ids = (free_hotel_ids
+            query = query.filter(func.lower(HotelsORM.location).contains(location.lower()))
+        query = (query
                  .limit(limit)
                  .offset(offset)
                  )
-        print('HOTEL QUERY:\n', free_hotel_ids.compile(bind=engine, compile_kwargs={"literal_binds": True}), '\n----')
+        print('HOTEL QUERY:\n', query.compile(bind=engine, compile_kwargs={"literal_binds": True}), '\n----')
 
-        return await self.get_filtered(HotelsORM.id.in_(free_hotel_ids))
+        result = await self.session.execute(query)
+
+        return [self.schema.model_validate(item) for item in result.scalars().all()]
