@@ -13,7 +13,14 @@ class HotelsRepository(BaseRepository):
     model = HotelsORM
     schema = Hotel
 
-    async def get_filtered_by_date(self, date_from: date, date_to: date) -> List[Hotel]:
+    async def get_filtered_by_date(self,
+                                   date_from: date,
+                                   date_to: date,
+                                   location: str | None,
+                                   title: str | None,
+                                   limit: int,
+                                   offset: int,
+    ) -> List[Hotel]:
         free_room_ids = room_ids_for_booking(date_from, date_to)
         free_hotel_ids = (
             select(RoomsORM.hotel_id)
@@ -21,22 +28,22 @@ class HotelsRepository(BaseRepository):
             .select_from(RoomsORM)
             .filter(RoomsORM.id.in_(free_room_ids))
         )
-        print(free_hotel_ids.compile(bind=engine, compile_kwargs={"literal_binds": True}))
 
-        return await self.get_filtered(HotelsORM.id.in_(free_hotel_ids))
+        # if title or location:
+        #    free_hotel_ids = free_hotel_ids.join(HotelsORM, free_hotel_ids.c.hotel_id == HotelsORM.id)
 
-    async def get_all(self, location, title, limit, offset):
-        query = select(self.model)
+        ## sqlalchemy.exc.ProgrammingError: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <
+        ## class 'asyncpg.exceptions.UndefinedTableError'>: missing FROM - clause entry for table "anon_1"
+        ##  ---- OK without it
+
         if title:
-            query = query.filter(func.lower(HotelsORM.title).contains(title.lower()))
+            free_hotel_ids = free_hotel_ids.filter(func.lower(HotelsORM.title).contains(title.lower()))
         if location:
-            query = query.filter(func.lower(HotelsORM.location).contains(location.lower()))
-        query = (query
+            free_hotel_ids = free_hotel_ids.filter(func.lower(HotelsORM.location).contains(location.lower()))
+        free_hotel_ids = (free_hotel_ids
                  .limit(limit)
                  .offset(offset)
                  )
-        print(query.compile(compile_kwargs={'literal_binds': True}))
-        result = await self.session.execute(query)
+        print('HOTEL QUERY:\n', free_hotel_ids.compile(bind=engine, compile_kwargs={"literal_binds": True}), '\n----')
 
-        hotels = [self.schema.model_validate(item) for item in result.scalars().all()]
-        return hotels
+        return await self.get_filtered(HotelsORM.id.in_(free_hotel_ids))
