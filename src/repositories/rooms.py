@@ -1,9 +1,7 @@
 from datetime import date
-from sqlalchemy import select, func
-from src.database import engine
 from src.repositories.base import BaseRepository
+from src.repositories.utils import room_ids_for_booking
 from src.models.rooms import RoomsORM
-from src.models.bookings import BookingsORM
 from src.schemas.rooms import Room
 
 class RoomsRepository(BaseRepository):
@@ -11,46 +9,8 @@ class RoomsRepository(BaseRepository):
     schema = Room
 
     async def get_filtered_by_date(self, hotel_id: int, date_from: date, date_to: date):
-        booked = (
-            select(BookingsORM.room_id, func.count('*').label('rooms_booked'))
-            .select_from(BookingsORM)
-            .filter(
-                BookingsORM.date_from <= date_to,
-                BookingsORM.date_to >= date_from
-            )
-            .group_by(BookingsORM.room_id)
-            .cte(name='booked')
-        )
-        free_rooms = (
-            select(
-                RoomsORM.id.label('room_id'),
-                (RoomsORM.quantity - func.coalesce(booked.c.rooms_booked, 0)).label('free_count')
-            )
-            .select_from(RoomsORM)
-            .filter_by(hotel_id=hotel_id)
-            .outerjoin(booked, RoomsORM.id == booked.c.room_id)
-            .cte(name='free_rooms')
-        )
-        room_ids = (
-            select(free_rooms.c.room_id).select_from(free_rooms).filter(
-                free_rooms.c.free_count > 0,
-            )
-        )
-        # print(query.compile(bind=engine, compile_kwargs={"literal_binds": True}))
-        return await self.get_filtered(RoomsORM.id.in_(room_ids))
-
-'''
-WITH booked AS 
-    (SELECT bookings.room_id AS room_id, count('*') AS rooms_booked 
-    FROM bookings 
-    WHERE bookings.date_from <= '2025-12-01' AND bookings.date_to >= '2025-09-01' GROUP BY bookings.room_id), 
-free_rooms AS 
-    (SELECT rooms.id AS room_id, rooms.quantity - coalesce(booked.rooms_booked, 0) AS free_count 
-    FROM rooms LEFT OUTER JOIN booked ON rooms.id = booked.room_id)
-SELECT * 
-FROM free_rooms 
-WHERE free_rooms.free_count > 0
-'''
+        free_room_ids = room_ids_for_booking(date_from, date_to, hotel_id)
+        return await self.get_filtered(RoomsORM.id.in_(free_room_ids))
 
 
 
