@@ -31,14 +31,13 @@ class RoomsRepository(BaseRepository):
             .outerjoin(booked, RoomsORM.id == booked.c.room_id)
             .cte(name='free_rooms')
         )
-        query = (
-            select('*').select_from(free_rooms).filter(
+        room_ids = (
+            select(free_rooms.c.room_id).select_from(free_rooms).filter(
                 free_rooms.c.free_count > 0,
             )
         )
-        print(query.compile(bind=engine, compile_kwargs={"literal_binds": True}))
-        result = await self.session.execute(query)
-        return result.scalars().all()  # -> List[int] (free room_id-s list) (DB SQL -> 2 columns: room_id, free_count)
+        # print(query.compile(bind=engine, compile_kwargs={"literal_binds": True}))
+        return await self.get_filtered(RoomsORM.id.in_(room_ids))
 
 '''
 WITH booked AS 

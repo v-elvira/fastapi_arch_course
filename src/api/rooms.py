@@ -26,7 +26,7 @@ async def get_rooms(
         hotel_id: int = Path(description='Hotel id'),
         date_from: date = Query(example='2024-09-01'),
         date_to: date = Query(example='2025-12-01'),
-): #-> List[Room]:
+) -> List[Room]:
     return await db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
 
