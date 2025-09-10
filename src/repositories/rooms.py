@@ -27,19 +27,13 @@ class RoomsRepository(BaseRepository):
                 (RoomsORM.quantity - func.coalesce(booked.c.rooms_booked, 0)).label('free_count')
             )
             .select_from(RoomsORM)
+            .filter_by(hotel_id=hotel_id)
             .outerjoin(booked, RoomsORM.id == booked.c.room_id)
             .cte(name='free_rooms')
-        )
-        hotel_rooms = (
-            select(RoomsORM.id)
-            .select_from(RoomsORM)
-            .filter_by(hotel_id=hotel_id)
-            .subquery(name='hotel_rooms')
         )
         query = (
             select('*').select_from(free_rooms).filter(
                 free_rooms.c.free_count > 0,
-                free_rooms.c.room_id.in_(hotel_rooms)
             )
         )
         print(query.compile(bind=engine, compile_kwargs={"literal_binds": True}))
