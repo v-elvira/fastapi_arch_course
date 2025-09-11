@@ -1,0 +1,8 @@
+from pydantic import Field
+from src.schemas.common import CommonBaseModel
+
+class FacilityAdd(CommonBaseModel):
+    title: str = Field(max_length=100)
+
+class Facility(FacilityAdd):
+    id: int
