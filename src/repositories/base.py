@@ -45,6 +45,11 @@ class BaseRepository:
             return
         return self.schema.model_validate(result.scalars().one())
 
+    async def add_bulk(self, data: list[CommonBaseModel]):
+        add_stmt = insert(self.model).values([item.model_dump() for item in data])
+        print('BULK:\n', add_stmt.compile(compile_kwargs={'literal_binds': True}), '----\n')
+        await self.session.execute(add_stmt)
+
     async def edit(self, model_data: CommonBaseModel, exclude_unset=False, **filter_by):
         update_stmt = (
             update(self.model)

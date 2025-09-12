@@ -3,6 +3,7 @@ from fastapi import Body, APIRouter, HTTPException
 from fastapi.params import Query, Path
 
 from src.api.dependencies import DBDep
+from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody
 
 from typing import List
@@ -51,7 +52,8 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
                 "title": "Люкс",
                 "description": "Люкс с видом на море",
                 "price": 1000,
-                "quantity": 3
+                "quantity": 3,
+                "facilities_ids": [2, 3]
             }
         },
         "2": {
@@ -67,8 +69,13 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
 )) -> dict:
     if not await db.hotels.get_one_or_none(id=hotel_id):
         raise HTTPException(status_code=404, detail='Hotel not found. Failed to create room')
-    room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
-    room = await db.rooms.add(room_data)
+    room_add_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
+    room = await db.rooms.add(room_add_data)
+
+    if room_data.facilities_ids:
+        room_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
+        await db.room_facilities.add_bulk(room_facilities_data)
+
     await db.session.commit()
 
     return {'status': 'OK', 'data': room}

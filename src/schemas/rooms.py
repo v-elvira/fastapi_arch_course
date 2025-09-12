@@ -5,9 +5,14 @@ class RoomAddBody(CommonBaseModel):
     description: str | None = None
     price: int
     quantity: int
+    facilities_ids: list[int] = []
 
-class RoomAdd(RoomAddBody):
+class RoomAdd(CommonBaseModel):
     hotel_id: int
+    title: str
+    description: str | None = None
+    price: int
+    quantity: int
 
 class Room(RoomAdd):
     id: int

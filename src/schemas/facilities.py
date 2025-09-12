@@ -6,3 +6,10 @@ class FacilityAdd(CommonBaseModel):
 
 class Facility(FacilityAdd):
     id: int
+
+class RoomFacilityAdd(CommonBaseModel):
+    room_id: int
+    facility_id: int
+
+class RoomFacility(RoomFacilityAdd):
+    id: int
