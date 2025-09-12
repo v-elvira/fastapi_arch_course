@@ -61,7 +61,7 @@ class BaseRepository:
         result = await self.session.execute(update_stmt)
         return self.schema.model_validate(result.scalars().one())
 
-    async def delete(self, **filter_by) -> None:
-        del_stmt = delete(self.model).filter_by(**filter_by)
+    async def delete(self, *filter, **filter_by) -> None:
+        del_stmt = delete(self.model).filter_by(**filter_by).filter(*filter)
         print(del_stmt.compile(compile_kwargs={'literal_binds': True}))
         await self.session.execute(del_stmt)

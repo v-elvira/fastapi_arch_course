@@ -3,10 +3,11 @@ from fastapi import Body, APIRouter, HTTPException
 from fastapi.params import Query, Path
 
 from src.api.dependencies import DBDep
+from src.models.facilities import RoomsFacilitiesOrm
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody
 
-from typing import List
+from src.utils.db_manager import DBManager
 
 router = APIRouter(prefix='/hotels', tags=['Rooms'])
 
@@ -18,7 +19,7 @@ router = APIRouter(prefix='/hotels', tags=['Rooms'])
 #         description: str | None = Query(None, description='Room description'),
 #         price: int | None = Query(None, description='Room price'),
 #         quantity: int | None = Query(None, description='Room quantity'),
-# ) -> List[Room]:
+# ) -> list[Room]:
 #     return await db.rooms.get_all(hotel_id, title, description, price, quantity)
 
 @router.get('/{hotel_id}/rooms')
@@ -27,7 +28,7 @@ async def get_rooms(
         hotel_id: int = Path(description='Hotel id'),
         date_from: date = Query(example='2024-09-01'),
         date_to: date = Query(example='2025-12-01'),
-) -> List[Room]:
+) -> list[Room]:
     return await db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
 
@@ -80,6 +81,20 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
 
     return {'status': 'OK', 'data': room}
 
+async def change_facilities(
+        db: DBManager,
+        room_id: int,
+        new_facilities: list[int],
+):
+    old_facilities = {f.facility_id for f in await db.room_facilities.get_filtered(room_id=room_id)}
+    to_remove = old_facilities - set(new_facilities)
+    to_add = set(new_facilities) - old_facilities
+    if to_add:
+        data_to_add = [RoomFacilityAdd(room_id=room_id, facility_id=f_id) for f_id in to_add]
+        await db.room_facilities.add_bulk(data_to_add)
+    if to_remove:
+        await db.room_facilities.delete(RoomsFacilitiesOrm.facility_id.in_(to_remove), room_id=room_id)
+
 @router.put('/{hotel_id}/rooms/{room_id}')
 async def replace_room(
         hotel_id: int,
@@ -89,6 +104,10 @@ async def replace_room(
 ) -> dict[str, Room | str]:
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
+
+    await change_facilities(db, room_id, room_data.facilities_ids)
+    del room_data.facilities_ids
+
     room = await db.rooms.edit(room_data, id=room_id)
     await db.session.commit()
     return {'status': 'OK', 'new_room': room}
@@ -103,6 +122,12 @@ async def edit_room(
 ) -> dict[str, Room | str]:
     if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
-    room = await db.rooms.edit(room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
+    if room_data.facilities_ids is not None:
+        await change_facilities(db, room_id, room_data.facilities_ids)
+    del room_data.facilities_ids
+    response = {'status': 'OK'}
+    if any(x is not None for x in vars(room_data).values()):
+        room = await db.rooms.edit(room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
+        response['edited_room'] = room
     await db.session.commit()
-    return {'status': 'OK', 'edited_room': room}
+    return response

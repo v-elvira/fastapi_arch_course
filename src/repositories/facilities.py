@@ -8,4 +8,4 @@ class FacilitiesRepository(BaseRepository):
 
 class RoomFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesOrm
-    shema = RoomFacility
+    schema = RoomFacility
