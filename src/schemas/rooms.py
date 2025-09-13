@@ -1,4 +1,6 @@
 from src.schemas.common import CommonBaseModel
+from src.schemas.facilities import Facility
+
 
 class RoomAddBody(CommonBaseModel):
     title: str
@@ -16,6 +18,9 @@ class RoomAdd(CommonBaseModel):
 
 class Room(RoomAdd):
     id: int
+
+class RoomWithRels(Room):
+    facilities: list[Facility]
 
 class RoomPatch(CommonBaseModel):
     title: str | None = None
