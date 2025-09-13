@@ -3,11 +3,9 @@ from fastapi import Body, APIRouter, HTTPException
 from fastapi.params import Query, Path
 
 from src.api.dependencies import DBDep
-from src.models.facilities import RoomsFacilitiesOrm
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody
 
-from src.utils.db_manager import DBManager
 
 router = APIRouter(prefix='/hotels', tags=['Rooms'])
 
@@ -81,19 +79,6 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
 
     return {'status': 'OK', 'data': room}
 
-async def change_facilities(
-        db: DBManager,
-        room_id: int,
-        new_facilities: list[int],
-):
-    old_facilities = {f.facility_id for f in await db.room_facilities.get_filtered(room_id=room_id)}
-    to_remove = old_facilities - set(new_facilities)
-    to_add = set(new_facilities) - old_facilities
-    if to_add:
-        data_to_add = [RoomFacilityAdd(room_id=room_id, facility_id=f_id) for f_id in to_add]
-        await db.room_facilities.add_bulk(data_to_add)
-    if to_remove:
-        await db.room_facilities.delete(RoomsFacilitiesOrm.facility_id.in_(to_remove), room_id=room_id)
 
 @router.put('/{hotel_id}/rooms/{room_id}')
 async def replace_room(
@@ -105,7 +90,7 @@ async def replace_room(
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
 
-    await change_facilities(db, room_id, room_data.facilities_ids)
+    await db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)
     del room_data.facilities_ids
 
     room = await db.rooms.edit(room_data, id=room_id)
@@ -123,7 +108,7 @@ async def edit_room(
     if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
     if room_data.facilities_ids is not None:
-        await change_facilities(db, room_id, room_data.facilities_ids)
+        await db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)
     del room_data.facilities_ids
     response = {'status': 'OK'}
     if any(x is not None for x in vars(room_data).values()):
