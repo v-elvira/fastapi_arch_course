@@ -23,6 +23,19 @@ class RoomsRepository(BaseRepository):
         return [RoomWithRels.model_validate(item) for item in result.scalars().all()] #result.unique().. for joinedload
 
 
+    async def get_one_or_none(self, **filter_by):
+        query = (
+            select(self.model)
+            .filter_by(**filter_by)
+            .options(selectinload(self.model.facilities))
+        )
+        result = await self.session.execute(query)
+        model_item = result.scalars().one_or_none()
+        if model_item is None:
+            return None
+        return RoomWithRels.model_validate(model_item)
+
+
     # async def get_all(self, hotel_id, title, description, price, quantity):
     #     query = select(self.model)
     #     if hotel_id:
