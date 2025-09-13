@@ -23,7 +23,7 @@ class RoomsRepository(BaseRepository):
         return [RoomWithRels.model_validate(item) for item in result.scalars().all()] #result.unique().. for joinedload
 
 
-    async def get_one_or_none(self, **filter_by):
+    async def get_one_or_none_with_rels(self, **filter_by):
         query = (
             select(self.model)
             .filter_by(**filter_by)
