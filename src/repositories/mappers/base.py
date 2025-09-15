@@ -1,9 +1,15 @@
+from typing import TypeVar
+
 from src.schemas.common import CommonBaseModel
 from src.database import Base
 
+
+DBModelType = TypeVar('DBModelType', bound=Base)
+SchemaType = TypeVar('SchemaType', bound=CommonBaseModel)
+
 class DataMapper:
-    db_model: Base
-    schema: CommonBaseModel
+    db_model: type[DBModelType]
+    schema: type[SchemaType]
 
     @classmethod
     def map_to_domain_entity(cls, data):
