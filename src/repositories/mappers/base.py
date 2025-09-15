@@ -1,6 +1,9 @@
+from src.schemas.common import CommonBaseModel
+from src.database import Base
+
 class DataMapper:
-    db_model: None
-    schema: None
+    db_model: Base
+    schema: CommonBaseModel
 
     @classmethod
     def map_to_domain_entity(cls, data):
