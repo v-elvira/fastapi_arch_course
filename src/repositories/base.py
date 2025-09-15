@@ -1,11 +1,13 @@
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.exc import IntegrityError
+
+from src.repositories.mappers.base import DataMapper
 from src.schemas.common import CommonBaseModel
 from src.database import Base
 
 class BaseRepository:
     model = Base
-    schema = CommonBaseModel
+    mapper = DataMapper
 
     def __init__(self, session):
         self.session = session
@@ -22,7 +24,7 @@ class BaseRepository:
         # Without "from_attributes"=True will be error 'Input should be a valid dictionary or instance of Hotel'
         # Default from_attributes=True is moved to schemas (model_config = ConfigDict(...))
 
-        result = [self.schema.model_validate(item) for item in result_db.scalars().all()]
+        result = [self.mapper.map_to_domain_entity(item) for item in result_db.scalars().all()]
         return result
 
     async def get_all(self, *args, **kwargs):
@@ -34,7 +36,7 @@ class BaseRepository:
         model_item = result.scalars().one_or_none()
         if model_item is None:
             return None
-        return self.schema.model_validate(model_item)
+        return self.mapper.map_to_domain_entity(model_item)
 
     async def add(self, model_data: CommonBaseModel):
         add_stmt = insert(self.model).values(**model_data.model_dump()).returning(self.model)
@@ -43,7 +45,7 @@ class BaseRepository:
             result = await self.session.execute(add_stmt)
         except IntegrityError:  # not good
             return
-        return self.schema.model_validate(result.scalars().one())
+        return self.mapper.map_to_domain_entity(result.scalars().one())
 
     async def add_bulk(self, data: list[CommonBaseModel]):
         add_stmt = insert(self.model).values([item.model_dump() for item in data])
@@ -59,7 +61,7 @@ class BaseRepository:
         )
         print(update_stmt.compile(compile_kwargs={'literal_binds': True}))
         result = await self.session.execute(update_stmt)
-        return self.schema.model_validate(result.scalars().one())
+        return self.mapper.map_to_domain_entity(result.scalars().one())
 
     async def delete(self, *filter, **filter_by) -> None:
         del_stmt = delete(self.model).filter_by(**filter_by).filter(*filter)

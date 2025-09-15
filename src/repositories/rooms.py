@@ -3,13 +3,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload, joinedload
 
 from src.repositories.base import BaseRepository
+from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMapper
 from src.repositories.utils import room_ids_for_booking
 from src.models.rooms import RoomsORM
-from src.schemas.rooms import Room, RoomWithRels
 
 class RoomsRepository(BaseRepository):
     model = RoomsORM
-    schema = Room
+    mapper = RoomDataMapper
 
     async def get_filtered_by_date(self, hotel_id: int, date_from: date, date_to: date):
         free_room_ids = room_ids_for_booking(date_from, date_to, hotel_id)
@@ -20,7 +20,7 @@ class RoomsRepository(BaseRepository):
             .filter(self.model.id.in_(free_room_ids))
         )
         result =  await self.session.execute(query)
-        return [RoomWithRels.model_validate(item) for item in result.scalars().all()] #result.unique().. for joinedload
+        return [RoomWithRelsDataMapper.map_to_domain_entity(item) for item in result.scalars().all()] #result.unique().. for joinedload
 
 
     async def get_one_or_none_with_rels(self, **filter_by):
@@ -33,7 +33,7 @@ class RoomsRepository(BaseRepository):
         model_item = result.scalars().one_or_none()
         if model_item is None:
             return None
-        return RoomWithRels.model_validate(model_item)
+        return RoomWithRelsDataMapper.map_to_domain_entity(model_item)
 
 
     # async def get_all(self, hotel_id, title, description, price, quantity):

@@ -12,7 +12,6 @@ from src.schemas.hotels import Hotel
 
 class HotelsRepository(BaseRepository):
     model = HotelsORM
-    schema = Hotel              # will be deleted when move to mappers in BaseRepository
     mapper = HotelDataMapper
 
     async def get_filtered_by_date(self,
