@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
@@ -13,9 +14,20 @@ from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
 from src.config import settings
 
+from src.init import redis_manager
+
 print(f'DB_NAME: {settings.DB_NAME}')
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # on FastAPI startup
+    await redis_manager.connect()
+    yield
+    # on FastAPI shutdown
+    await redis_manager.close()
+
+app = FastAPI(lifespan=lifespan)
+
 app.include_router(router_auth)
 app.include_router(router_hotels)
 app.include_router(router_rooms)
