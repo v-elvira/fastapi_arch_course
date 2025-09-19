@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
 import uvicorn
 
 import sys
@@ -22,6 +24,7 @@ print(f'DB_NAME: {settings.DB_NAME}')
 async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
+    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     yield
     # on FastAPI shutdown
     await redis_manager.close()

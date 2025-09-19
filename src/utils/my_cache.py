@@ -1,3 +1,5 @@
+# not used, replaced with fastapi_cache.decorator.cache from fastapi-cache2
+
 from datetime import date, datetime
 import json
 from functools import wraps
@@ -20,7 +22,7 @@ def get_json(value, for_cache_key=False):
     return json.dumps(value, default=serialize)
 
 
-def my_redis_cache(expire=10):
+def my_redis_cache(expire=10): # replaced with fastapi_cache.decorator.cache
     def decorator(f):
         @wraps(f)
         async def wrapper(**kwargs):

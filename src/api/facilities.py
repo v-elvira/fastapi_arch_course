@@ -1,14 +1,14 @@
 from typing import List
 from fastapi import Body, APIRouter, HTTPException
+from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep
 from src.schemas.facilities import Facility, FacilityAdd
-from src.utils.my_cache import my_redis_cache
 
 router = APIRouter(prefix='/facilities', tags=['Facilities'])
 
 @router.get('')
-@my_redis_cache(100)
+@cache(expire=100)
 async def get_facilities(
         db: DBDep,
 ) -> List[Facility]:
