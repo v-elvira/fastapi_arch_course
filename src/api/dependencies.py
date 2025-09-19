@@ -1,15 +1,16 @@
 from fastapi import Query, Depends, Request, HTTPException
-from pydantic import BaseModel, model_validator, computed_field
+from pydantic import model_validator, computed_field
 from typing import Annotated
 
 from src.services.auth import AuthService
 from src.database import async_session_maker
+from src.schemas.common import CommonBaseModel
 from src.utils.db_manager import DBManager
 
 
 DEFAULT_PER_PAGE = 3
 
-class PaginationParams(BaseModel):
+class PaginationParams(CommonBaseModel):
     page: Annotated[int, Query(1, ge=1)]
     per_page: Annotated[int | None, Query(default=None, ge=1, le=30)]
 

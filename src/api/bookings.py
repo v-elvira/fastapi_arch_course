@@ -3,7 +3,7 @@ from fastapi import Body, APIRouter, HTTPException
 
 from src.api.dependencies import DBDep, UserIdDep
 from src.schemas.bookings import Booking, BookingAdd, BookingAddBody
-
+from src.utils.my_cache import my_redis_cache
 
 router = APIRouter(prefix='/bookings', tags=['Bookings'])
 
@@ -25,6 +25,7 @@ async def create_booking(
 
 
 @router.get('')
+@my_redis_cache(5) # for test
 async def get_all_bookings(
         db: DBDep,
 ) -> List[Booking]:

@@ -5,7 +5,7 @@ from fastapi.params import Query, Path
 from src.api.dependencies import DBDep
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody, RoomWithRels
-
+from src.utils.my_cache import my_redis_cache
 
 router = APIRouter(prefix='/hotels', tags=['Rooms'])
 
@@ -21,6 +21,7 @@ router = APIRouter(prefix='/hotels', tags=['Rooms'])
 #     return await db.rooms.get_all(hotel_id, title, description, price, quantity)
 
 @router.get('/{hotel_id}/rooms')
+@my_redis_cache()
 async def get_rooms(
         db: DBDep,
         hotel_id: int = Path(description='Hotel id'),
@@ -31,6 +32,7 @@ async def get_rooms(
 
 
 @router.get('/{hotel_id}/rooms/{room_id}')
+@my_redis_cache(60)
 async def get_room(hotel_id: int, room_id: int, db: DBDep) -> RoomWithRels | None:
     return await db.rooms.get_one_or_none_with_rels(hotel_id=hotel_id, id=room_id)
 

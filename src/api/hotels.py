@@ -3,6 +3,7 @@ from fastapi import Body, APIRouter
 from fastapi.params import Query
 
 from src.api.dependencies import PaginationDep, DBDep
+from src.utils.my_cache import my_redis_cache
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 
 from typing import List
@@ -10,6 +11,7 @@ from typing import List
 router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
 @router.get('')
+@my_redis_cache(10)
 async def get_hotels(
         pagination: PaginationDep,
         db: DBDep,
@@ -23,7 +25,8 @@ async def get_hotels(
 
 
 @router.get('/{hotel_id}')
-async def get_hotel(hotel_id: int, db: DBDep) -> Hotel:
+@my_redis_cache(30)
+async def get_hotel(hotel_id: int, db: DBDep) -> Hotel | None:
     return await db.hotels.get_one_or_none(id=hotel_id)
 
 
