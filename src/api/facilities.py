@@ -4,6 +4,7 @@ from fastapi_cache.decorator import cache
 
 from src.api.dependencies import DBDep
 from src.schemas.facilities import Facility, FacilityAdd
+from src.tasks.tasks import test_task
 
 router = APIRouter(prefix='/facilities', tags=['Facilities'])
 
@@ -23,4 +24,7 @@ async def create_facility(
     if not facility:
         raise HTTPException(status_code=400, detail='Failed to create facility')
     await db.session.commit()
+
+    test_task.delay()
+
     return {'status': 'OK', 'data': facility}
