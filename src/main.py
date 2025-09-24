@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
@@ -11,6 +12,7 @@ print(sys.path) # was already there? # +2 times in the end (not in __main__ => o
 
 from src.api.hotels import router as router_hotels
 from src.api.auth import router as router_auth
+from src.api.dependencies import get_db
 from src.api.rooms import router as router_rooms
 from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
@@ -21,11 +23,23 @@ from src.init import redis_manager
 
 print(f'DB_NAME: {settings.DB_NAME}')
 
+async def send_daily_checkins():
+    async for db in get_db():
+        bookings = await db.bookings.get_booking_with_today_checkin()
+        print(f'Regular async task: {bookings=}')
+
+async def run_regular_sender():
+    while True:
+        print('Regular hello')  # OK
+        await send_daily_checkins()
+        await asyncio.sleep(777)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
+    asyncio.create_task(run_regular_sender())
     yield
     # on FastAPI shutdown
     await redis_manager.close()
