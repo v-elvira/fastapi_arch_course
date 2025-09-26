@@ -25,7 +25,7 @@ async def register(user_data: UserRequestAdd, db: DBDep, response: Response) -> 
     if not user:
         response.status_code = status.HTTP_409_CONFLICT
         return {'status': f'Failed: user with email {user_data.email} already exists'}
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK', 'user': user}
 
 @router.get('/me')

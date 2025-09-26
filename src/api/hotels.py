@@ -33,7 +33,7 @@ async def get_hotel(hotel_id: int, db: DBDep) -> Hotel | None:
 @router.delete('/{hotel_id}')
 async def delete_hotel(hotel_id: int, db: DBDep) -> dict:
     await db.hotels.delete(id=hotel_id)
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK'}
 
 
@@ -58,7 +58,7 @@ async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body(
 )) -> dict:
 # )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
     hotel = await db.hotels.add(hotel_data)
-    await db.session.commit()
+    await db.commit()
 
     return {'status': 'OK', 'data': hotel}
 
@@ -69,7 +69,7 @@ async def replace_hotel(
         db: DBDep,
 ) -> dict[str, Hotel | str]:
     hotel = await db.hotels.edit(hotel_data, id=hotel_id)
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK', 'new_hotel': hotel}
 
 
@@ -80,5 +80,5 @@ async def edit_hotel(
         db: DBDep,
 ) -> dict[str, Hotel | str]:
     hotel = await db.hotels.edit(hotel_data, exclude_unset=True, id=hotel_id)
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK', 'edited_hotel': hotel}

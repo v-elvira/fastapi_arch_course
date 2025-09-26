@@ -23,7 +23,7 @@ async def create_facility(
     facility = await db.facilities.add(facility_data)
     if not facility:
         raise HTTPException(status_code=400, detail='Failed to create facility')
-    await db.session.commit()
+    await db.commit()
 
     test_task.delay()
 

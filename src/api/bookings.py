@@ -19,7 +19,7 @@ async def create_booking(
     booking = await db.bookings.add(full_booking_data)
     if not booking:
         raise HTTPException(status_code=400, detail='Failed to create booking')
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK', 'data': booking}
 
 

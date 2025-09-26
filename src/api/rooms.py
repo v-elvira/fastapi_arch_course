@@ -39,7 +39,7 @@ async def get_room(hotel_id: int, room_id: int, db: DBDep) -> RoomWithRels | Non
 @router.delete('/{hotel_id}/rooms/{room_id}')
 async def delete_room(hotel_id: int, room_id: int, db: DBDep) -> dict:
     await db.rooms.delete(hotel_id=hotel_id, id=room_id)
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK'}
 
 
@@ -76,7 +76,7 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
         room_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
         await db.room_facilities.add_bulk(room_facilities_data)
 
-    await db.session.commit()
+    await db.commit()
 
     return {'status': 'OK', 'data': room}
 
@@ -95,7 +95,7 @@ async def replace_room(
     del room_data.facilities_ids
 
     room = await db.rooms.edit(room_data, id=room_id)
-    await db.session.commit()
+    await db.commit()
     return {'status': 'OK', 'new_room': room}
 
 
@@ -115,5 +115,5 @@ async def edit_room(
     if any(x is not None for x in vars(room_data).values()):
         room = await db.rooms.edit(room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
         response['edited_room'] = room
-    await db.session.commit()
+    await db.commit()
     return response
