@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).parent.parent  # env_file = '.env' with no exact path was not found
 
 class Settings(BaseSettings):
+    MODE: Literal['TEST', 'LOCAL', 'DEV', 'PROD']
     DB_HOST: str
     DB_PORT: int
     DB_USER: str
