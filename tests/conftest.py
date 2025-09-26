@@ -3,6 +3,7 @@ import pytest
 from src.database import Base, engine_null_pool
 from src.config import settings
 
+from src.models import *                            # for Base.metadata to be seen. But worked OK without it (?)
 
 @pytest.fixture(scope='session', autouse=True)
 def check_test_mode():

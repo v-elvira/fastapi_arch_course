@@ -8,12 +8,7 @@ from alembic import context
 from src.config import settings
 from src.database import Base
 
-from src.models.hotels import HotelsORM  # import each model
-# from src.models import hotels          # the whole file is also OK (without import: nothing detected)
-from src.models.rooms import RoomsORM
-from src.models.users import UsersORM
-from src.models.bookings import BookingsORM
-from src.models.facilities import FacilitiesORM  # any one model is OK for alembic to see the file
+from src.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
