@@ -28,11 +28,11 @@ async def setup_database(check_test_mode):
 @pytest.fixture(scope='session', autouse=True)
 async def fill_database(setup_database):
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
-        with open('tests/mock_hotels.json', "r") as hotels_file:
+        with open('tests/mock_hotels.json', encoding='utf-8') as hotels_file:
             data = json.load(hotels_file)
             await db.hotels.add_bulk([HotelAdd.model_validate(item) for item in data])
 
-        with open('tests/mock_rooms.json', 'r') as rooms_file:
+        with open('tests/mock_rooms.json', encoding='utf-8') as rooms_file:
             data = json.load(rooms_file)
             await db.rooms.add_bulk([RoomAdd.model_validate(item) for item in data])
 
