@@ -15,7 +15,7 @@ async def login_user(user_data: UserRequestAdd, db: DBDep, response: Response) -
     response.set_cookie('access_token', access_token)
     return {'access_token': access_token}
 
-@router.post('/register')
+@router.post('/register', status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserRequestAdd, db: DBDep, response: Response) -> dict[str, str | User]:
     new_data = UserRequestAdd.model_dump(user_data)
     new_data['hashed_password'] = AuthService().hash_password(user_data.password)
