@@ -17,6 +17,12 @@ def check_test_mode():
     assert settings.MODE == 'TEST'
     print('Checked TEST mode')
 
+@pytest.fixture(scope='function')   # default scope
+async def db() -> DBManager:
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        yield db
+
+
 @pytest.fixture(scope='session', autouse=True)
 async def setup_database(check_test_mode):
     print('Main fixture applying')
@@ -27,26 +33,30 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope='session', autouse=True)
 async def fill_database(setup_database):
-    async with DBManager(session_factory=async_session_maker_null_pool) as db:
+    async with DBManager(session_factory=async_session_maker_null_pool) as db_:
         with open('tests/mock_hotels.json', encoding='utf-8') as hotels_file:
             data = json.load(hotels_file)
-            await db.hotels.add_bulk([HotelAdd.model_validate(item) for item in data])
+            await db_.hotels.add_bulk([HotelAdd.model_validate(item) for item in data])
 
         with open('tests/mock_rooms.json', encoding='utf-8') as rooms_file:
             data = json.load(rooms_file)
-            await db.rooms.add_bulk([RoomAdd.model_validate(item) for item in data])
+            await db_.rooms.add_bulk([RoomAdd.model_validate(item) for item in data])
 
-        await db.commit()
+        await db_.commit()
 
+
+@pytest.fixture(scope='session')
+async def client():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
+        yield ac
 
 @pytest.fixture(scope='session', autouse=True)
-async def register_user(setup_database):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
-        response = await client.post(
-            '/auth/register',
-            json={
-                'email': 'me@mail.ru',
-                'password': 'me',
-            },
-        )
-        assert response.status_code == 201
+async def register_user(client, setup_database):
+    response = await client.post(
+        '/auth/register',
+        json={
+            'email': 'me@mail.ru',
+            'password': 'me',
+        },
+    )
+    assert response.status_code == 201
