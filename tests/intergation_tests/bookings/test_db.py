@@ -23,6 +23,8 @@ async def test_booking_crud(db):
 
     edited = await db.bookings.edit(model_data=BookingPatch(price=777), exclude_unset=True, id=booking_id)
     assert edited.price == 777
+    assert edited.room_id == data.room_id
+    assert edited.date_from == data.date_from
     assert edited.id == booking_id
 
     await db.bookings.delete(id=booking_id)
