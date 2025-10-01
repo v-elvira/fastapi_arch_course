@@ -19,11 +19,11 @@ async def test_booking_crud(db):
 
     added_booking = await db.bookings.get_one_or_none(id=booking_id)
     assert added_booking
-    for attr in vars(data):
-        assert vars(added_booking)[attr] == vars(data)[attr]
+    assert data.model_dump() == added_booking.model_dump(exclude={'id'})
 
-    edited = await db.bookings.edit(model_data=BookingPatch(price=777), exclude_unset=True)
+    edited = await db.bookings.edit(model_data=BookingPatch(price=777), exclude_unset=True, id=booking_id)
     assert edited.price == 777
+    assert edited.id == booking_id
 
     await db.bookings.delete(id=booking_id)
     deleted = await db.bookings.get_one_or_none(id=booking_id)
