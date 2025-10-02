@@ -1,4 +1,5 @@
 import json
+from typing import AsyncGenerator
 
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -9,6 +10,7 @@ from src.schemas.hotels import HotelAdd
 from src.schemas.rooms import RoomAdd
 from src.main import app
 from src.utils.db_manager import DBManager
+from src.api.dependencies import get_db
 
 from src.models import *                            # for Base.metadata to be seen. But worked OK without it (?)
 
@@ -17,15 +19,19 @@ def check_test_mode():
     assert settings.MODE == 'TEST'
     print('Checked TEST mode')
 
-@pytest.fixture(scope='function')   # default scope
-async def db() -> DBManager:
+async def get_db_null_poll():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
+        yield db
+
+@pytest.fixture(scope='function')   # default scope
+async def db() -> AsyncGenerator[DBManager, None]:
+    async for db in get_db_null_poll():
         yield db
 
 
 @pytest.fixture(scope='session', autouse=True)
 async def setup_database(check_test_mode):
-    print('Main fixture applying')
+    print('Setup DB fixture applying')
 
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -47,6 +53,7 @@ async def fill_database(setup_database):
 
 @pytest.fixture(scope='session')
 async def client():
+    app.dependency_overrides[get_db] = get_db_null_poll
     async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
         yield ac
 
