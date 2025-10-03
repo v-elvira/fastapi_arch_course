@@ -70,3 +70,15 @@ async def register_user(client, setup_database):
         },
     )
     assert response.status_code == 201
+
+@pytest.fixture(scope='session')
+async def authenticated_client(client) -> AsyncGenerator[AsyncClient, None]:
+    response = await client.post(
+        '/auth/login',
+        json={
+            'email': 'me@mail.ru',
+            'password': 'me',
+        }
+    )
+    assert response.cookies.get('access_token')
+    yield client
