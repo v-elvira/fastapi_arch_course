@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+# from fastapi_cache.backends.inmemory import InMemoryBackend
 import uvicorn
 
 import sys
@@ -43,6 +44,10 @@ async def lifespan(app: FastAPI):
     yield
     # on FastAPI shutdown
     await redis_manager.close()
+
+# if settings.MODE == 'TEST':                   # -> mock.patch for cache in conftest.py
+#     #FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
+#     FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
 
 app = FastAPI(lifespan=lifespan)
 
