@@ -1,5 +1,5 @@
 import pytest
-from tests.conftest import authenticated_client
+from tests.conftest import authenticated_client, get_db_null_poll
 
 @pytest.mark.parametrize('room_id, date_from, date_to, status_code', [
      (1, '2025-10-01', '2025-10-08', 201),
@@ -36,21 +36,25 @@ async def test_get_my_bookings(authenticated_client):
     assert result.status_code == 200
     assert isinstance(result.json(), list)
 
-@pytest.fixture
-async def delete_all_bookings(fill_database, db):
-    await db.bookings.delete()
-    await db.commit()
+@pytest.fixture(scope='module')
+async def delete_all_bookings(fill_database):
+    async for _db in get_db_null_poll():
+        await _db.bookings.delete()
+        await _db.commit()
 
 
-@pytest.mark.parametrize('booking_count', [1, 2, 3])
-async def test_add_and_get_bookings(booking_count, delete_all_bookings, authenticated_client):
-    booking_params = {'room_id': 1, 'date_from': '2025-10-01', 'date_to': '2025-10-10'}
-    for _ in range(booking_count):
-        result = await authenticated_client.post(
-            '/bookings',
-            json=booking_params,
-        )
-        assert result.status_code == 201
+@pytest.mark.parametrize('room_id, date_from, date_to, total_booked', [
+    (1, '2025-10-01', '2025-10-05', 1),
+    (1, '2025-10-01', '2025-10-05', 2),
+    (1, '2025-10-01', '2025-10-05', 3),
+])
+async def test_add_and_get_bookings(room_id, date_to, date_from, total_booked, delete_all_bookings, authenticated_client):
+    booking_params = {'room_id': room_id, 'date_from': date_from, 'date_to': date_to}
+    result = await authenticated_client.post(
+        '/bookings',
+        json=booking_params,
+    )
+    assert result.status_code == 201
 
     result = await authenticated_client.get(
         '/bookings/me',
@@ -58,4 +62,4 @@ async def test_add_and_get_bookings(booking_count, delete_all_bookings, authenti
     assert result.status_code == 200
     result_json = result.json()
     assert isinstance(result_json, list)
-    assert len(result_json) == booking_count
+    assert len(result_json) == total_booked
