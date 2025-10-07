@@ -5,6 +5,7 @@ from src.repositories.mappers.base import DataMapper
 from src.schemas.common import CommonBaseModel
 from src.database import Base
 
+
 class BaseRepository:
     model = Base
     mapper = DataMapper
@@ -13,13 +14,9 @@ class BaseRepository:
         self.session = session
 
     async def get_filtered(self, *filter, **filter_by):
-        query = (
-            select(self.model)
-            .filter(*filter)
-            .filter_by(**filter_by)
-        )
+        query = select(self.model).filter(*filter).filter_by(**filter_by)
         result_db = await self.session.execute(query)
-        #result = [self.schema.model_validate(item, from_attributes=True) for item in result_orm.scalars().all()]  # ok
+        # result = [self.schema.model_validate(item, from_attributes=True) for item in result_orm.scalars().all()]  # ok
 
         # Without "from_attributes"=True will be error 'Input should be a valid dictionary or instance of Hotel'
         # Default from_attributes=True is moved to schemas (model_config = ConfigDict(...))

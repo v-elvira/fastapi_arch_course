@@ -4,6 +4,7 @@ from src.repositories.users import UsersRepository
 from src.repositories.bookings import BookingsRepository
 from src.repositories.facilities import FacilitiesRepository, RoomFacilitiesRepository
 
+
 class DBManager:
     def __init__(self, session_factory):
         self.session_factory = session_factory

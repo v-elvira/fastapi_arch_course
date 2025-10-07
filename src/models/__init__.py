@@ -1,4 +1,5 @@
 from src.models.hotels import HotelsORM  # import each model
+
 # from src.models import hotels          # the whole file is also OK (without import: nothing detected)
 from src.models.rooms import RoomsORM
 from src.models.users import UsersORM

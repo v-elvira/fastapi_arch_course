@@ -7,6 +7,7 @@ from src.config import settings
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+
 class AuthService:
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 

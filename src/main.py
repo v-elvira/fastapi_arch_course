@@ -4,13 +4,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+
 # from fastapi_cache.backends.inmemory import InMemoryBackend
 import uvicorn
 
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent.parent))
-print(sys.path) # was already there? # +2 times in the end (not in __main__ => on import?)
+print(sys.path)  # was already there? # +2 times in the end (not in __main__ => on import?)
 
 from src.api.hotels import router as router_hotels
 from src.api.auth import router as router_auth
@@ -25,10 +27,12 @@ from src.init import redis_manager
 
 print(f'DB_NAME: {settings.DB_NAME}')
 
+
 async def send_daily_checkins():
     async for db in get_db():
         bookings = await db.bookings.get_booking_with_today_checkin()
         print(f'Regular async task: {bookings=}')
+
 
 async def run_regular_sender():
     while True:
@@ -36,15 +40,17 @@ async def run_regular_sender():
         await send_daily_checkins()
         await asyncio.sleep(777)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
-    FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
+    FastAPICache.init(RedisBackend(redis_manager.redis), prefix='fastapi-cache')
     asyncio.create_task(run_regular_sender())
     yield
     # on FastAPI shutdown
     await redis_manager.close()
+
 
 # if settings.MODE == 'TEST':                   # -> mock.patch for cache in conftest.py
 #     #FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
@@ -59,10 +65,10 @@ app.include_router(router_bookings)
 app.include_router(router_facilities)
 app.include_router(router_images)
 
+
 @app.get('/', name='Home page')
 async def index() -> dict:
     return {'Hello': 42}
-
 
 
 if __name__ == '__main__':

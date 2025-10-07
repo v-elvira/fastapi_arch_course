@@ -7,10 +7,12 @@ from src.tasks.celery_app import celery_instance
 from src.utils.db_manager import DBManager
 from src.database import async_session_maker_null_pool
 
+
 @celery_instance.task
 def test_task():
     time.sleep(5)
     print('My test task done!')
+
 
 # @celery_instance.task
 def resize_image(image_path: str):
@@ -32,10 +34,11 @@ def resize_image(image_path: str):
 
 
 async def get_bookings_with_today_checkin_helper():
-    print('Today\'s booking helper..')
+    print("Today's booking helper..")
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         bookings = await db.bookings.get_booking_with_today_checkin()
         print(f'{bookings=}')
+
 
 @celery_instance.task(name='booking_today_checkin')
 def send_emails_to_users_with_today_checkin():

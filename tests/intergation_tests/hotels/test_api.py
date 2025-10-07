@@ -1,5 +1,6 @@
 from tests.conftest import client
 
+
 async def test_get_hotels(client):
     # "AssertionError: You must call init first!" if @cache is not commented in api
     result = await client.get(

@@ -7,6 +7,7 @@ from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMap
 from src.repositories.utils import room_ids_for_booking
 from src.models.rooms import RoomsORM
 
+
 class RoomsRepository(BaseRepository):
     model = RoomsORM
     mapper = RoomDataMapper
@@ -19,22 +20,18 @@ class RoomsRepository(BaseRepository):
             .options(selectinload(self.model.facilities))  # or joinedload
             .filter(self.model.id.in_(free_room_ids))
         )
-        result =  await self.session.execute(query)
-        return [RoomWithRelsDataMapper.map_to_domain_entity(item) for item in result.scalars().all()] #result.unique().. for joinedload
-
+        result = await self.session.execute(query)
+        return [
+            RoomWithRelsDataMapper.map_to_domain_entity(item) for item in result.scalars().all()
+        ]  # result.unique().. for joinedload
 
     async def get_one_or_none_with_rels(self, **filter_by):
-        query = (
-            select(self.model)
-            .filter_by(**filter_by)
-            .options(selectinload(self.model.facilities))
-        )
+        query = select(self.model).filter_by(**filter_by).options(selectinload(self.model.facilities))
         result = await self.session.execute(query)
         model_item = result.scalars().one_or_none()
         if model_item is None:
             return None
         return RoomWithRelsDataMapper.map_to_domain_entity(model_item)
-
 
     # async def get_all(self, hotel_id, title, description, price, quantity):
     #     query = select(self.model)

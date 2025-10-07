@@ -3,9 +3,11 @@ from src.models.facilities import FacilitiesORM, RoomsFacilitiesORM
 from src.repositories.mappers.mappers import FacilityDataMapper, RoomFacilityDataMapper
 from src.schemas.facilities import RoomFacilityAdd
 
+
 class FacilitiesRepository(BaseRepository):
     model = FacilitiesORM
     mapper = FacilityDataMapper
+
 
 class RoomFacilitiesRepository(BaseRepository):
     model = RoomsFacilitiesORM

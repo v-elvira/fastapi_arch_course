@@ -6,8 +6,9 @@ from functools import wraps
 from src.init import redis_manager
 from src.schemas.common import CommonBaseModel
 
+
 def serialize(value, filter=False):
-    if isinstance(value,(date, datetime)):
+    if isinstance(value, (date, datetime)):
         return value.isoformat()
     elif isinstance(value, CommonBaseModel):
         return value.model_dump()
@@ -22,7 +23,7 @@ def get_json(value, for_cache_key=False):
     return json.dumps(value, default=serialize)
 
 
-def my_redis_cache(expire=10): # replaced with fastapi_cache.decorator.cache
+def my_redis_cache(expire=10):  # replaced with fastapi_cache.decorator.cache
     def decorator(f):
         @wraps(f)
         async def wrapper(**kwargs):
@@ -36,5 +37,7 @@ def my_redis_cache(expire=10): # replaced with fastapi_cache.decorator.cache
                 return result
             else:
                 return json.loads(from_cache)
+
         return wrapper
+
     return decorator

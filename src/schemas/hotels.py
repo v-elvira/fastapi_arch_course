@@ -6,8 +6,10 @@ class HotelAdd(CommonBaseModel):
     title: str
     location: str
 
+
 class Hotel(HotelAdd):
     id: int
+
 
 class HotelPatch(CommonBaseModel):
     title: str | None = None

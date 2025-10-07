@@ -13,6 +13,7 @@ router = APIRouter(prefix='/images', tags=['Hotel images'])
 #
 #     resize_image.delay(image_path)  # resize_image must be decorated with @celery_instance.task
 
+
 @router.post('')
 def upload_image(file: UploadFile, bg_tasks: BackgroundTasks):
     image_path = f'src/static/images/{file.filename}'  # Uvicorn is started from src parent folder

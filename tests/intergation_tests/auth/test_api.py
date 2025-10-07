@@ -2,16 +2,17 @@ import pytest
 
 from tests.conftest import client
 
-@pytest.mark.parametrize('email, password, status', [
-    pytest.param('mail@mail.ru', 'pass', 201, id='Happy path'),
-    pytest.param('mail@mail.ru', 'pass', 409, id='User exists'),
-    pytest.param('mail', 'pass', 422, id='Wrong email'),
-])
+
+@pytest.mark.parametrize(
+    'email, password, status',
+    [
+        pytest.param('mail@mail.ru', 'pass', 201, id='Happy path'),
+        pytest.param('mail@mail.ru', 'pass', 409, id='User exists'),
+        pytest.param('mail', 'pass', 422, id='Wrong email'),
+    ],
+)
 async def test_register(email, password, status, client):
-    result = await client.post(
-        '/auth/register',
-        json={'email': email, 'password': password}
-    )
+    result = await client.post('/auth/register', json={'email': email, 'password': password})
     assert result.status_code == status
 
 
@@ -47,7 +48,5 @@ async def test_full_auth(client):
     assert logout_result.status_code == 200
     assert 'access_token' not in client.cookies
 
-    new_me_result = await client.get(
-        '/auth/me'
-    )
+    new_me_result = await client.get('/auth/me')
     assert new_me_result.status_code == 401

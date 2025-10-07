@@ -2,6 +2,7 @@ import pytest
 
 from src.schemas.hotels import HotelAdd
 
+
 # @pytest.mark.asyncio   # or add "asyncio_mode = auto" in pytest.ini for all functions
 async def test_add_hotel(db):
     data = HotelAdd(title='Hotel 1', location='Main Street, 2')

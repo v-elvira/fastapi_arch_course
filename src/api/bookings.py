@@ -6,11 +6,12 @@ from src.schemas.bookings import Booking, BookingAdd, BookingAddBody, BookingPat
 
 router = APIRouter(prefix='/bookings', tags=['Bookings'])
 
+
 @router.post('', status_code=201)
 async def create_booking(
-        db: DBDep,
-        user_id: UserIdDep,
-        booking_data: BookingAddBody = Body(),
+    db: DBDep,
+    user_id: UserIdDep,
+    booking_data: BookingAddBody = Body(),
 ) -> dict[str, str | Booking]:
     room = await db.rooms.get_one_or_none(id=booking_data.room_id)
     if not room:
@@ -25,24 +26,22 @@ async def create_booking(
 
 @router.get('')
 async def get_all_bookings(
-        db: DBDep,
+    db: DBDep,
 ) -> List[Booking]:
     return await db.bookings.get_all()
 
 
 @router.get('/me')
-async def get_my_bookings(
-        db: DBDep,
-        user_id: UserIdDep
-) -> List[Booking]:
+async def get_my_bookings(db: DBDep, user_id: UserIdDep) -> List[Booking]:
     return await db.bookings.get_filtered(user_id=user_id)
+
 
 @router.patch('/{booking_id}')
 async def edit_booking(
-        booking_id: int,
-        booking_data: BookingPatch,
-        db: DBDep,
-        user_id: UserIdDep,
+    booking_id: int,
+    booking_data: BookingPatch,
+    db: DBDep,
+    user_id: UserIdDep,
 ) -> dict[str, Booking | str]:
     booking = await db.bookings.get_one_or_none(id=booking_id)
     if not booking:

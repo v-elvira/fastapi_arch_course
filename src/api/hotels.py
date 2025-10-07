@@ -10,15 +10,16 @@ from typing import List
 
 router = APIRouter(prefix='/hotels', tags=['Hotels'])
 
+
 @router.get('')
 @cache(expire=10)
 async def get_hotels(
-        pagination: PaginationDep,
-        db: DBDep,
-        title: str | None = Query(None, description='Hotel title'),
-        location: str | None = Query(None, description='Location fragment'),
-        date_from: date = Query(examples=["2024-08-01"]),
-        date_to: date = Query(examples=["2024-08-10"]),
+    pagination: PaginationDep,
+    db: DBDep,
+    title: str | None = Query(None, description='Hotel title'),
+    location: str | None = Query(None, description='Location fragment'),
+    date_from: date = Query(examples=['2024-08-01']),
+    date_to: date = Query(examples=['2024-08-10']),
 ) -> List[Hotel]:
     per_page = pagination.per_page or 5
     return await db.hotels.get_filtered_by_date(date_from, date_to, location, title, per_page, pagination.start)
@@ -38,35 +39,39 @@ async def delete_hotel(hotel_id: int, db: DBDep) -> dict:
 
 
 @router.post('')
-async def create_hotel(db: DBDep, hotel_data: HotelAdd = Body(
-    openapi_examples={
-        "1": {
-            "summary": "Сочи",
-            "value": {
-                "title": "Отель Сочи 5 звезд у моря",
-                "location": "Sochi, Main, 5",
-            }
-        },
-        "2": {
-            "summary": "Дубай",
-            "value": {
-                "title": "Отель Дубай У фонтана",
-                "location": "Dubai, Fountain, 1",
-            }
+async def create_hotel(
+    db: DBDep,
+    hotel_data: HotelAdd = Body(
+        openapi_examples={
+            '1': {
+                'summary': 'Сочи',
+                'value': {
+                    'title': 'Отель Сочи 5 звезд у моря',
+                    'location': 'Sochi, Main, 5',
+                },
+            },
+            '2': {
+                'summary': 'Дубай',
+                'value': {
+                    'title': 'Отель Дубай У фонтана',
+                    'location': 'Dubai, Fountain, 1',
+                },
+            },
         }
-    }
-)) -> dict:
-# )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
+    ),
+) -> dict:
+    # )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
     hotel = await db.hotels.add(hotel_data)
     await db.commit()
 
     return {'status': 'OK', 'data': hotel}
 
+
 @router.put('/{hotel_id}')
 async def replace_hotel(
-        hotel_id: int,
-        hotel_data: HotelAdd,
-        db: DBDep,
+    hotel_id: int,
+    hotel_data: HotelAdd,
+    db: DBDep,
 ) -> dict[str, Hotel | str]:
     hotel = await db.hotels.edit(hotel_data, id=hotel_id)
     await db.commit()
@@ -75,9 +80,9 @@ async def replace_hotel(
 
 @router.patch('/{hotel_id}')
 async def edit_hotel(
-        hotel_id: int,
-        hotel_data: HotelPatch,
-        db: DBDep,
+    hotel_id: int,
+    hotel_data: HotelPatch,
+    db: DBDep,
 ) -> dict[str, Hotel | str]:
     hotel = await db.hotels.edit(hotel_data, exclude_unset=True, id=hotel_id)
     await db.commit()

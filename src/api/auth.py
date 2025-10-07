@@ -4,7 +4,8 @@ from src.api.dependencies import UserIdDep, DBDep
 from src.schemas.users import UserRequestAdd, UserAdd, User
 from src.services.auth import AuthService
 
-router = APIRouter(prefix='/auth', tags=['User auth']) #, dependencies=...) for the whole route Deps
+router = APIRouter(prefix='/auth', tags=['User auth'])  # , dependencies=...) for the whole route Deps
+
 
 @router.post('/login')
 async def login_user(user_data: UserRequestAdd, db: DBDep, response: Response) -> dict:
@@ -14,6 +15,7 @@ async def login_user(user_data: UserRequestAdd, db: DBDep, response: Response) -
     access_token = AuthService().create_access_token({'user_id': user.id})
     response.set_cookie('access_token', access_token)
     return {'access_token': access_token}
+
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserRequestAdd, db: DBDep, response: Response) -> dict[str, str | User]:
@@ -28,13 +30,14 @@ async def register(user_data: UserRequestAdd, db: DBDep, response: Response) -> 
     await db.commit()
     return {'status': 'OK', 'user': user}
 
+
 @router.get('/me')
 async def get_me(user_id: UserIdDep, db: DBDep) -> User | None:
     user = await db.users.get_one_or_none(id=user_id)
     return user
 
+
 @router.post('/logout')
 async def logout_user(response: Response) -> dict:
     response.delete_cookie('access_token')
     return {'status': 'ok'}
-

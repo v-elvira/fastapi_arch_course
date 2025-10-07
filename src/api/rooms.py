@@ -20,12 +20,13 @@ router = APIRouter(prefix='/hotels', tags=['Rooms'])
 # ) -> list[Room]:
 #     return await db.rooms.get_all(hotel_id, title, description, price, quantity)
 
+
 @router.get('/{hotel_id}/rooms')
 async def get_rooms(
-        db: DBDep,
-        hotel_id: int = Path(description='Hotel id'),
-        date_from: date = Query(examples=['2024-09-01']),
-        date_to: date = Query(examples=['2025-12-01']),
+    db: DBDep,
+    hotel_id: int = Path(description='Hotel id'),
+    date_from: date = Query(examples=['2024-09-01']),
+    date_to: date = Query(examples=['2025-12-01']),
 ) -> list[RoomWithRels]:
     return await db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
@@ -44,29 +45,28 @@ async def delete_room(hotel_id: int, room_id: int, db: DBDep) -> dict:
 
 
 @router.post('/{hotel_id}/rooms')
-async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
-    openapi_examples={
-        "1": {
-            "summary": "Люкс",
-            "value": {
-                "title": "Люкс",
-                "description": "Люкс с видом на море",
-                "price": 1000,
-                "quantity": 3,
-                "facilities_ids": [2, 3]
-            }
-        },
-        "2": {
-            "summary": "Стандарт",
-            "value": {
-                "title": "Стандарт",
-                "description": "Номер на двоих",
-                "price": 700,
-                "quantity": 12
-            }
+async def create_room(
+    db: DBDep,
+    hotel_id: int,
+    room_data: RoomAddBody = Body(
+        openapi_examples={
+            '1': {
+                'summary': 'Люкс',
+                'value': {
+                    'title': 'Люкс',
+                    'description': 'Люкс с видом на море',
+                    'price': 1000,
+                    'quantity': 3,
+                    'facilities_ids': [2, 3],
+                },
+            },
+            '2': {
+                'summary': 'Стандарт',
+                'value': {'title': 'Стандарт', 'description': 'Номер на двоих', 'price': 700, 'quantity': 12},
+            },
         }
-    }
-)) -> dict:
+    ),
+) -> dict:
     if not await db.hotels.get_one_or_none(id=hotel_id):
         raise HTTPException(status_code=404, detail='Hotel not found. Failed to create room')
     room_add_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
@@ -83,10 +83,10 @@ async def create_room(db: DBDep, hotel_id: int, room_data: RoomAddBody = Body(
 
 @router.put('/{hotel_id}/rooms/{room_id}')
 async def replace_room(
-        hotel_id: int,
-        room_id: int,
-        room_data: RoomAddBody,
-        db: DBDep,
+    hotel_id: int,
+    room_id: int,
+    room_data: RoomAddBody,
+    db: DBDep,
 ) -> dict[str, Room | str]:
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
@@ -101,10 +101,10 @@ async def replace_room(
 
 @router.patch('/{hotel_id}/rooms/{room_id}')
 async def edit_room(
-        hotel_id: int,
-        room_id: int,
-        room_data: RoomPatch,
-        db: DBDep,
+    hotel_id: int,
+    room_id: int,
+    room_data: RoomPatch,
+    db: DBDep,
 ) -> dict[str, Room | str]:
     if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')

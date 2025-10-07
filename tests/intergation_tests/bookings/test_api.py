@@ -1,15 +1,19 @@
 import pytest
 from tests.conftest import authenticated_client, get_db_null_poll
 
-@pytest.mark.parametrize('room_id, date_from, date_to, status_code', [
-     (1, '2025-10-01', '2025-10-08', 201),
-     (1, '2025-10-03', '2025-10-10', 201),
-     (1, '2025-10-01', '2025-10-09', 201),
-     (1, '2025-10-01', '2025-10-10', 201),
-     pytest.param(1, '2025-10-01', '2025-10-10', 201, id='last free room'),
-     pytest.param(1, '2025-10-01', '2025-10-10', 409, id='no free rooms'),
-     (1, '2025-10-09', '2025-10-12', 201),
- ])
+
+@pytest.mark.parametrize(
+    'room_id, date_from, date_to, status_code',
+    [
+        (1, '2025-10-01', '2025-10-08', 201),
+        (1, '2025-10-03', '2025-10-10', 201),
+        (1, '2025-10-01', '2025-10-09', 201),
+        (1, '2025-10-01', '2025-10-10', 201),
+        pytest.param(1, '2025-10-01', '2025-10-10', 201, id='last free room'),
+        pytest.param(1, '2025-10-01', '2025-10-10', 409, id='no free rooms'),
+        (1, '2025-10-09', '2025-10-12', 201),
+    ],
+)
 async def test_add_booking(room_id, date_from, date_to, status_code, db, authenticated_client):
     result = await authenticated_client.post(
         '/bookings',
@@ -17,7 +21,7 @@ async def test_add_booking(room_id, date_from, date_to, status_code, db, authent
             'room_id': room_id,
             'date_from': date_from,
             'date_to': date_to,
-        }
+        },
     )
     assert result.status_code == status_code
     result_json = result.json()
@@ -36,6 +40,7 @@ async def test_get_my_bookings(authenticated_client):
     assert result.status_code == 200
     assert isinstance(result.json(), list)
 
+
 @pytest.fixture(scope='module')
 async def delete_all_bookings(fill_database):
     async for _db in get_db_null_poll():
@@ -43,12 +48,17 @@ async def delete_all_bookings(fill_database):
         await _db.commit()
 
 
-@pytest.mark.parametrize('room_id, date_from, date_to, total_booked', [
-    (1, '2025-10-01', '2025-10-05', 1),
-    (1, '2025-10-01', '2025-10-05', 2),
-    (1, '2025-10-01', '2025-10-05', 3),
-])
-async def test_add_and_get_bookings(room_id, date_to, date_from, total_booked, delete_all_bookings, authenticated_client):
+@pytest.mark.parametrize(
+    'room_id, date_from, date_to, total_booked',
+    [
+        (1, '2025-10-01', '2025-10-05', 1),
+        (1, '2025-10-01', '2025-10-05', 2),
+        (1, '2025-10-01', '2025-10-05', 3),
+    ],
+)
+async def test_add_and_get_bookings(
+    room_id, date_to, date_from, total_booked, delete_all_bookings, authenticated_client
+):
     booking_params = {'room_id': room_id, 'date_from': date_from, 'date_to': date_to}
     result = await authenticated_client.post(
         '/bookings',

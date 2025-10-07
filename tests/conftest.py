@@ -15,18 +15,21 @@ from src.main import app
 from src.utils.db_manager import DBManager
 from src.api.dependencies import get_db
 
-from src.models import *                            # for Base.metadata to be seen. But worked OK without it (?)
+from src.models import *  # for Base.metadata to be seen. But worked OK without it (?)
+
 
 @pytest.fixture(scope='session', autouse=True)
 def check_test_mode():
     assert settings.MODE == 'TEST'
     print('Checked TEST mode')
 
+
 async def get_db_null_poll():
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
         yield db
 
-@pytest.fixture(scope='function')   # default scope
+
+@pytest.fixture(scope='function')  # default scope
 async def db() -> AsyncGenerator[DBManager, None]:
     async for db in get_db_null_poll():
         yield db
@@ -39,6 +42,7 @@ async def setup_database(check_test_mode):
     async with engine_null_pool.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+
 
 @pytest.fixture(scope='session', autouse=True)
 async def fill_database(setup_database):
@@ -60,6 +64,7 @@ async def client():
     async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as ac:
         yield ac
 
+
 @pytest.fixture(scope='session', autouse=True)
 async def register_user(client, setup_database):
     response = await client.post(
@@ -71,6 +76,7 @@ async def register_user(client, setup_database):
     )
     assert response.status_code == 201
 
+
 @pytest.fixture(scope='session')
 async def authenticated_client(register_user, client) -> AsyncGenerator[AsyncClient, None]:
     await client.post(
@@ -78,7 +84,7 @@ async def authenticated_client(register_user, client) -> AsyncGenerator[AsyncCli
         json={
             'email': 'me@mail.ru',
             'password': 'me',
-        }
+        },
     )
     assert client.cookies.get('access_token')
     yield client

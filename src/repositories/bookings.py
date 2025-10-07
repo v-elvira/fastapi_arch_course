@@ -9,6 +9,7 @@ from src.repositories.mappers.mappers import BookingDataMapper
 from src.repositories.utils import room_ids_for_booking
 from src.schemas.bookings import BookingAdd
 
+
 class BookingsRepository(BaseRepository):
     model = BookingsORM
     mapper = BookingDataMapper
@@ -26,7 +27,7 @@ class BookingsRepository(BaseRepository):
             .filter(RoomsORM.id.in_(free_room_ids_q))
             .filter_by(id=booking_data.room_id)
         )
-        result =  await self.session.execute(query)
+        result = await self.session.execute(query)
         if not result.scalars().all():
             raise HTTPException(status_code=409, detail='No free rooms')
         return await self.add(booking_data)
