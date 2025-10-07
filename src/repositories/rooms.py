@@ -1,6 +1,6 @@
 from datetime import date
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload, joinedload  # noqa F401
 
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import RoomDataMapper, RoomWithRelsDataMapper

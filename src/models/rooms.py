@@ -1,7 +1,11 @@
+from typing import TYPE_CHECKING
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import ForeignKey
 
 from src.database import Base
+
+if TYPE_CHECKING:
+    from src.models import FacilitiesORM
 
 class RoomsORM(Base):
     __tablename__ = 'rooms'
