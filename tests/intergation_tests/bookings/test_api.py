@@ -1,5 +1,5 @@
 import pytest
-from tests.conftest import authenticated_client, get_db_null_poll
+from tests.conftest import get_db_null_poll
 
 
 @pytest.mark.parametrize(

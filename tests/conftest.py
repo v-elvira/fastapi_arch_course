@@ -1,3 +1,4 @@
+# ruff: noqa E402
 import json
 from typing import AsyncGenerator
 from unittest import mock
@@ -15,7 +16,7 @@ from src.main import app
 from src.utils.db_manager import DBManager
 from src.api.dependencies import get_db
 
-from src.models import *  # for Base.metadata to be seen. But worked OK without it (?)
+from src.models import *  # noqa # for Base.metadata to be seen. But worked OK without it (?)
 
 
 @pytest.fixture(scope='session', autouse=True)

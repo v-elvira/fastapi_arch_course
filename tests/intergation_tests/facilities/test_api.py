@@ -1,6 +1,3 @@
-from tests.conftest import client
-
-
 async def test_create_facility(client):
     test_title = 'Wi-Fi'
     result = await client.post(

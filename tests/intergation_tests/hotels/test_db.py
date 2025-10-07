@@ -1,5 +1,3 @@
-import pytest
-
 from src.schemas.hotels import HotelAdd
 
 

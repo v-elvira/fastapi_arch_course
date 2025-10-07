@@ -1,8 +1,5 @@
 import pytest
 
-from tests.conftest import client
-
-
 @pytest.mark.parametrize(
     'email, password, status',
     [
