@@ -7,8 +7,8 @@ from src.database import Base
 
 
 class BaseRepository:
-    model = Base
-    mapper = DataMapper
+    model = type[Base]
+    mapper = type[DataMapper]
 
     def __init__(self, session):
         self.session = session

@@ -45,7 +45,7 @@ async def run_regular_sender():
 async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
-    FastAPICache.init(RedisBackend(redis_manager.redis), prefix='fastapi-cache')
+    FastAPICache.init(RedisBackend(redis_manager._redis), prefix='fastapi-cache')
     asyncio.create_task(run_regular_sender())
     yield
     # on FastAPI shutdown

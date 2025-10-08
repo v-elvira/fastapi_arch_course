@@ -1,6 +1,7 @@
 from datetime import date
 from fastapi import Body, APIRouter, HTTPException
 from fastapi.params import Query, Path
+from typing import Mapping
 
 from src.api.dependencies import DBDep
 from src.schemas.facilities import RoomFacilityAdd
@@ -71,6 +72,8 @@ async def create_room(
         raise HTTPException(status_code=404, detail='Hotel not found. Failed to create room')
     room_add_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(room_add_data)
+    if not room:
+        raise HTTPException(status_code=400, detail='Failed to create room')
 
     if room_data.facilities_ids:
         room_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
@@ -87,7 +90,7 @@ async def replace_room(
     room_id: int,
     room_data: RoomAddBody,
     db: DBDep,
-) -> dict[str, Room | str]:
+) -> Mapping[str, Room | str]:
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
 
@@ -105,7 +108,7 @@ async def edit_room(
     room_id: int,
     room_data: RoomPatch,
     db: DBDep,
-) -> dict[str, Room | str]:
+) -> Mapping[str, Room | str]:
     if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
         raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
     if room_data.facilities_ids is not None:
