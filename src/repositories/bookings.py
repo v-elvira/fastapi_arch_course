@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import select
-from fastapi import HTTPException
 
+from src.exceptions import NoFreeRoomException
 from src.models import RoomsORM
 from src.repositories.base import BaseRepository
 from src.models.bookings import BookingsORM
@@ -29,5 +29,5 @@ class BookingsRepository(BaseRepository):
         )
         result = await self.session.execute(query)
         if not result.scalars().all():
-            raise HTTPException(status_code=409, detail='No free rooms')
+            raise NoFreeRoomException
         return await self.add(booking_data)

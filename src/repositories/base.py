@@ -1,6 +1,7 @@
 from sqlalchemy import select, insert, update, delete
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
+from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 from src.schemas.common import CommonBaseModel
 from src.database import Base
@@ -27,12 +28,21 @@ class BaseRepository:
     async def get_all(self, *args, **kwargs):
         return await self.get_filtered()
 
-    async def get_one_or_none(self, **filter_by):
+    async def   get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         result = await self.session.execute(query)
         model_item = result.scalars().one_or_none()
         if model_item is None:
             return None
+        return self.mapper.map_to_domain_entity(model_item)
+
+    async def get_one(self, **filter_by):
+        query = select(self.model).filter_by(**filter_by)
+        result = await self.session.execute(query)
+        try:
+            model_item = result.scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
         return self.mapper.map_to_domain_entity(model_item)
 
     async def add(self, model_data: CommonBaseModel):
