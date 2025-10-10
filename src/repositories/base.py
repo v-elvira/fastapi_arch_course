@@ -1,7 +1,7 @@
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException, ObjectExistsException
 from src.repositories.mappers.base import DataMapper
 from src.schemas.common import CommonBaseModel
 from src.database import Base
@@ -47,11 +47,11 @@ class BaseRepository:
 
     async def add(self, model_data: CommonBaseModel):
         add_stmt = insert(self.model).values(**model_data.model_dump()).returning(self.model)
-        print(add_stmt.compile(compile_kwargs={'literal_binds': True}))
+        # print(add_stmt.compile(compile_kwargs={'literal_binds': True}))
         try:
             result = await self.session.execute(add_stmt)
-        except IntegrityError:  # not good
-            return
+        except IntegrityError:
+            raise ObjectExistsException
         return self.mapper.map_to_domain_entity(result.scalars().one())
 
     async def add_bulk(self, data: list[CommonBaseModel]):

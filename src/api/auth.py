@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Response, status, HTTPException
 
 from src.api.dependencies import UserIdDep, DBDep
+from src.exceptions import ObjectExistsException
 from src.schemas.users import UserRequestAdd, UserAdd, User
 from src.services.auth import AuthService
 
@@ -18,15 +19,15 @@ async def login_user(user_data: UserRequestAdd, db: DBDep, response: Response) -
 
 
 @router.post('/register', status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRequestAdd, db: DBDep, response: Response) -> dict[str, str | User]:
+async def register(user_data: UserRequestAdd, db: DBDep) -> dict[str, str | User]:
     new_data = UserRequestAdd.model_dump(user_data)
     new_data['hashed_password'] = AuthService().hash_password(user_data.password)
     del new_data['password']
     new_user_data = UserAdd(**new_data)
-    user = await db.users.add(new_user_data)
-    if not user:
-        response.status_code = status.HTTP_409_CONFLICT
-        return {'status': f'Failed: user with email {user_data.email} already exists'}
+    try:
+        user = await db.users.add(new_user_data)
+    except ObjectExistsException:
+        raise HTTPException(status_code=409, detail=f'User with email {user_data.email} already exists')
     await db.commit()
     return {'status': 'OK', 'user': user}
 

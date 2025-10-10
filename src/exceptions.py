@@ -11,3 +11,7 @@ class ObjectNotFoundException(BaseException):
 
 class NoFreeRoomException(BaseException):
     detail = 'No free rooms left'
+
+class ObjectExistsException(BaseException):
+    detail = 'Object already exists'
+
