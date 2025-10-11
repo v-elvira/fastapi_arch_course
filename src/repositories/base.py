@@ -1,3 +1,4 @@
+from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
@@ -50,8 +51,12 @@ class BaseRepository:
         # print(add_stmt.compile(compile_kwargs={'literal_binds': True}))
         try:
             result = await self.session.execute(add_stmt)
-        except IntegrityError:
-            raise ObjectExistsException
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                print(f'{type(ex.orig.__cause__)=}')
+                raise ObjectExistsException from ex
+            else:
+                raise ex  # or raise
         return self.mapper.map_to_domain_entity(result.scalars().one())
 
     async def add_bulk(self, data: list[CommonBaseModel]):

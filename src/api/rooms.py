@@ -1,10 +1,11 @@
 from datetime import date
-from fastapi import Body, APIRouter, HTTPException
+from fastapi import Body, APIRouter
 from fastapi.params import Query, Path
 from typing import Mapping
 
 from src.api.dependencies import DBDep
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException, RoomNotFoundHTTPException, HotelNotFoundHTTPException, \
+    check_date_to_is_after_date_from
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomAdd, RoomPatch, Room, RoomAddBody, RoomWithRels
 from fastapi_cache.decorator import cache
@@ -30,8 +31,7 @@ async def get_rooms(
     date_from: date = Query(examples=['2024-09-01']),
     date_to: date = Query(examples=['2025-12-01']),
 ) -> list[RoomWithRels]:
-    if date_from > date_to:
-        raise HTTPException(status_code=400, detail='Date from is later than date to')
+    check_date_to_is_after_date_from(date_from, date_to)
     return await db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
 
@@ -41,13 +41,13 @@ async def get_room(hotel_id: int, room_id: int, db: DBDep) -> RoomWithRels:
     try:
         return await db.rooms.get_one_with_rels(hotel_id=hotel_id, id=room_id)
     except ObjectNotFoundException:
-        raise HTTPException(status_code=404, detail='Room not found')
+        RoomNotFoundHTTPException
 
 
 @router.delete('/{hotel_id}/rooms/{room_id}')
 async def delete_room(hotel_id: int, room_id: int, db: DBDep) -> dict:
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
-        raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
+        raise RoomNotFoundHTTPException
     await db.rooms.delete(hotel_id=hotel_id, id=room_id)
     await db.commit()
     return {'status': 'OK'}
@@ -77,7 +77,7 @@ async def create_room(
     ),
 ) -> dict:
     if not await db.hotels.get_one_or_none(id=hotel_id):
-        raise HTTPException(status_code=404, detail='Hotel not found. Failed to create room')
+        raise HotelNotFoundHTTPException
     room_add_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(room_add_data)
 
@@ -98,7 +98,7 @@ async def replace_room(
     db: DBDep,
 ) -> Mapping[str, Room | str]:
     if not await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
-        raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
+        raise RoomNotFoundHTTPException
 
     await db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)
     del room_data.facilities_ids
@@ -115,8 +115,18 @@ async def edit_room(
     room_data: RoomPatch,
     db: DBDep,
 ) -> Mapping[str, Room | str]:
-    if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
-        raise HTTPException(status_code=404, detail=f'No room with id {room_id} found in this hotel')
+    # if not await db.rooms.get_one_or_none(hotel_id=hotel_id, id=room_id):
+    #     raise RoomNotFoundHTTPException
+    ## v2 long:
+    try:
+        db.hotels.get_one(hotel_id=hotel_id)
+    except ObjectNotFoundException:
+        raise HotelNotFoundHTTPException
+    try:
+        await db.rooms.get_one(hotel_id=hotel_id, room_id=room_id)
+    except ObjectNotFoundException:
+        raise RoomNotFoundHTTPException
+
     if room_data.facilities_ids is not None:
         await db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)
     del room_data.facilities_ids
