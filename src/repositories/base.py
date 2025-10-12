@@ -1,3 +1,4 @@
+import logging
 from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -56,6 +57,7 @@ class BaseRepository:
                 print(f'{type(ex.orig.__cause__)=}')
                 raise ObjectExistsException from ex
             else:
+                logging.exception(f'Failed to add to DB, data: {model_data}')   # = logging.error(exc_info=True)
                 raise ex  # or raise
         return self.mapper.map_to_domain_entity(result.scalars().one())
 

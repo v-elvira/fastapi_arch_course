@@ -1,6 +1,7 @@
 # ruff: noqa: E402
 import asyncio
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
@@ -27,6 +28,14 @@ from src.init import redis_manager
 
 print(f'DB_NAME: {settings.DB_NAME}')
 
+# logging.basicConfig(
+#     filename='logfile.txt',
+#     level=logging.DEBUG,
+#     format='%(levelname)s %(asctime)s "%(message)s" %(lineno)d %(funcName)s',
+#     datefmt='%Y-%m-%d %H:%M:%S',
+# )
+logging.basicConfig(level=logging.DEBUG)
+
 
 async def send_daily_checkins():
     async for db in get_db():
@@ -46,6 +55,7 @@ async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager._redis), prefix='fastapi-cache')
+    logging.info("FastAPI cache initialized")
     asyncio.create_task(run_regular_sender())
     yield
     # on FastAPI shutdown
