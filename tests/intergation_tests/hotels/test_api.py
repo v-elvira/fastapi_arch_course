@@ -6,3 +6,16 @@ async def test_get_hotels(client):
     )
     print(f'ALL hotels: {result.json()}')
     assert result.status_code == 200
+
+
+async def test_get_hotel(client):
+    result = await client.get(
+        '/hotels/1',
+    )
+    print(f'GOT hotel: {result.json()}')
+    assert result.status_code == 200
+    result_json = result.json()
+    assert isinstance(result_json, dict)
+    assert 'title' in result_json
+    assert 'location' in result_json
+    assert 'id' in result_json
