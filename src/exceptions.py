@@ -12,6 +12,11 @@ class BaseException(Exception):
 class ObjectNotFoundException(BaseException):
     detail = 'Object not found'
 
+class RoomNotFoundException(ObjectNotFoundException):
+    detail = 'Room not found'
+
+class HotelNotFoundException(ObjectNotFoundException):
+    detail = 'Hotel not found'
 
 class NoFreeRoomException(BaseException):
     detail = 'No free rooms left'
