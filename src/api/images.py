@@ -1,6 +1,7 @@
 import shutil
 from fastapi import APIRouter, UploadFile, BackgroundTasks
 
+from src.services.images import ImageService
 from src.tasks.tasks import resize_image
 
 router = APIRouter(prefix='/images', tags=['Hotel images'])
@@ -16,9 +17,4 @@ router = APIRouter(prefix='/images', tags=['Hotel images'])
 
 @router.post('')
 def upload_image(file: UploadFile, bg_tasks: BackgroundTasks):
-    image_path = f'src/static/images/{file.filename}'  # Uvicorn is started from src parent folder
-    with open(image_path, 'wb+') as new_file:
-        shutil.copyfileobj(file.file, new_file)
-
-    # resize_image.delay(image_path)
-    bg_tasks.add_task(resize_image, image_path)
+    ImageService().upload_image(file, bg_tasks)
