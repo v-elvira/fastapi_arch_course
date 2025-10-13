@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta, timezone
 import jwt  # PyJWT in requirements
-from fastapi import HTTPException
 
 from passlib.context import CryptContext
 from src.config import settings
+from src.exceptions import WrongEmailPasswordException, InvalidTokenException, ExpiredTokenException, \
+    ObjectExistsException, UserExistsException
+from src.schemas.users import UserRequestAdd, UserAdd
 from src.services.base import BaseService
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -29,6 +31,28 @@ class AuthService(BaseService):
         try:
             return jwt.decode(token, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         except jwt.DecodeError:
-            raise HTTPException(status_code=401, detail='Invalid token')
+            raise InvalidTokenException
         except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail='Expired token')
+            raise ExpiredTokenException
+
+    async def login_user(self, user_data: UserRequestAdd) -> str:
+            user = await self.db.users.get_user_with_hashed_password(email=user_data.email)
+            if not user or not self.verify_password(user_data.password, user.hashed_password):
+                raise WrongEmailPasswordException
+            return self.create_access_token({'user_id': user.id})
+
+    async def register(self, user_data: UserRequestAdd):
+            new_data = UserRequestAdd.model_dump(user_data)
+            new_data['hashed_password'] = self.hash_password(user_data.password)
+            del new_data['password']
+            new_user_data = UserAdd(**new_data)
+            try:
+                user = await self.db.users.add(new_user_data)
+            except ObjectExistsException as ex:
+                raise UserExistsException
+            await self.db.commit()
+            return user
+
+    async def get_user(self, user_id: int):
+        user = await self.db.users.get_one_or_none(id=user_id)
+        return user

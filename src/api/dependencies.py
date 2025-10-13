@@ -2,6 +2,7 @@ from fastapi import Query, Depends, Request, HTTPException
 from pydantic import model_validator, computed_field
 from typing import Annotated
 
+from src.exceptions import InvalidTokenException, InvalidTokenHTTPException, ExpiredTokenException
 from src.services.auth import AuthService
 from src.database import async_session_maker
 from src.schemas.common import CommonBaseModel
@@ -41,7 +42,12 @@ def get_token(request: Request) -> str:
 
 def get_current_user_id(token: Annotated[str, Depends(get_token)]) -> int:
     # def get_current_user_id(token: str = Depends(get_token)) -> int:  # same, ok
-    data = AuthService().decode_token(token)
+    try:
+        data = AuthService().decode_token(token)
+    except InvalidTokenException:
+        raise InvalidTokenHTTPException
+    except ExpiredTokenException:
+        raise ExpiredTokenException
     return data['user_id']
 
 
