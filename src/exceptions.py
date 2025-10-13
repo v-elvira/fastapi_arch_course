@@ -71,6 +71,10 @@ class ExpiredTokenHTTPException(BaseHTTPException):
     status_code = 401
     detail = 'Token expired'
 
+class NoAccessTokenHTTPException(BaseHTTPException):
+    status_code = 401
+    detail='No access token provided'
+
 class WrongEmailPasswordHTTPException(BaseHTTPException):
     status_code = 401
     detail='Wrong email/password'

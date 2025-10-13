@@ -1,8 +1,9 @@
-from fastapi import Query, Depends, Request, HTTPException
+from fastapi import Query, Depends, Request
 from pydantic import model_validator, computed_field
 from typing import Annotated
 
-from src.exceptions import InvalidTokenException, InvalidTokenHTTPException, ExpiredTokenException
+from src.exceptions import InvalidTokenException, InvalidTokenHTTPException, ExpiredTokenException, \
+    NoAccessTokenHTTPException
 from src.services.auth import AuthService
 from src.database import async_session_maker
 from src.schemas.common import CommonBaseModel
@@ -36,7 +37,7 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 def get_token(request: Request) -> str:
     token = request.cookies.get('access_token')
     if not token:
-        raise HTTPException(status_code=401, detail='No token provided')
+        raise NoAccessTokenHTTPException
     return token
 
 
