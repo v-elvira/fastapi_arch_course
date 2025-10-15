@@ -34,7 +34,7 @@ print(f'DB_NAME: {settings.DB_NAME}')
 #     format='%(levelname)s %(asctime)s "%(message)s" %(lineno)d %(funcName)s',
 #     datefmt='%Y-%m-%d %H:%M:%S',
 # )
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 async def send_daily_checkins():
@@ -46,7 +46,7 @@ async def send_daily_checkins():
 async def run_regular_sender():
     while True:
         print('Regular hello')  # OK
-        await send_daily_checkins()
+        await send_daily_checkins()  # first real DB connection attempt on FastAPI startup will be in this function
         await asyncio.sleep(777)
 
 
@@ -82,4 +82,5 @@ async def index() -> dict:
 
 
 if __name__ == '__main__':
-    uvicorn.run(app='main:app', reload=True, port=8000)
+    uvicorn.run(app='main:app', host='0.0.0.0', reload=True, port=8000)
+    # if --network=host while starting docker, default host (localhost) is OK
