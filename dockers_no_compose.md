@@ -4,12 +4,14 @@ docker build -t booking_image .
 
 docker run --name booking_db \
     -p 6432:5432 \
-    -e POSTGRES_USER=booking_user \
+    -e POSTGRES_USER=postgres \
     -e POSTGRES_PASSWORD=password \
     -e POSTGRES_DB=booking \
     --network=bookNetwork \
     --volume pg-booking-data:/var/lib/postgresql/data \
     -d postgres:16
+
+``` docker volume rm pg-booking-data if user data was changed! ```
 
 docker run --name booking_cache \
     -p 7379:6379 \
@@ -32,3 +34,13 @@ docker run --name booking_celery_beat \
     --network=bookNetwork \
     booking_image \
     celery --app=src.tasks.celery_app:celery_instance beat -l INFO
+
+```
+docker stop $(docker ps -q)
+docker stop $(docker ps -aqf name='^booking')
+docker start $(docker ps -aqf name='^booking')
+
+docker rm $(docker ps -aqf name='^booking')
+OR
+docker rm -f $(docker ps -q)
+```

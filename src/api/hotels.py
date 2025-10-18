@@ -86,6 +86,5 @@ async def edit_hotel(
     hotel_data: HotelPatch,
     db: DBDep,
 ) -> dict[str, Hotel | str]:
-    hotel = await db.hotels.edit(hotel_data, exclude_unset=True, id=hotel_id)
-    await db.commit()
+    hotel = await HotelService(db).edit_hotel(hotel_id, hotel_data)
     return {'status': 'OK', 'edited_hotel': hotel}

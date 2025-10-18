@@ -30,7 +30,7 @@ async def create_booking(
 async def get_all_bookings(
     db: DBDep,
 ) -> List[Booking]:
-    return BookingService(db).get_all_bookings()
+    return await BookingService(db).get_all_bookings()
 
 
 @router.get('/me')
