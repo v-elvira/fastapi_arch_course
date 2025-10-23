@@ -7,11 +7,16 @@ services:
 #    ports:
 #      - '6432:5432'
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=booking
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    # will take them from default .env file
     volumes:
       - pg-booking-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 0.01s
+      retries: 10000
 
   booking_cache:
     restart:
@@ -33,8 +38,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     depends_on:
-      - booking_db
-      - booking_cache
+      booking_db:
+        condition: service_healthy
+      booking_cache:
+        condition: service_started  # default
 
   booking_celery_worker:
     build:
@@ -73,3 +80,9 @@ volumes:
 
 # default network with type bridge will be created
 # network and containers outer names start with current folder name
+
+# docker volume rm  fastapi_arsh_pg-booking-data [folder-name+volume]
+# docker-compose up --build (to rebuild with changed ENV)
+
+# docker volume ls | grep booking
+# docker network ls (fastapi_arsh_default)

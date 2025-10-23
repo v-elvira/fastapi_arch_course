@@ -29,7 +29,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
 
-    model_config = SettingsConfigDict(env_file=os.path.join(BASE_DIR, '.env'))  # default: '.env' (, extra='ignore')
+    model_config = SettingsConfigDict(env_file=os.path.join(BASE_DIR, '.env'), extra='ignore')  # default: '.env'
+    # extra: using the same .env file for back and postgres (different variable names)
 
 
 settings = Settings()
