@@ -35,6 +35,13 @@ docker run --name booking_celery_beat \
     booking_image \
     celery --app=src.tasks.celery_app:celery_instance beat -l INFO
 
+docker run --name booking_nginx \
+    --network=bookNetwork \
+    --restart unless-stopped \
+    -p 80:80 \
+    --volume ./nginx.conf:/etc/nginx/nginx.conf \
+    nginx
+
 ```
 docker stop $(docker ps -q)
 docker stop $(docker ps -aqf name='^booking')

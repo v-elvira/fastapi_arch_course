@@ -1,9 +1,11 @@
 services:
   booking_db:
+    restart:
+      unless-stopped
     image:
       postgres:16
-    ports:
-      - '6432:5432'
+#    ports:
+#      - '6432:5432'
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
@@ -12,16 +14,20 @@ services:
       - pg-booking-data:/var/lib/postgresql/data
 
   booking_cache:
+    restart:
+      unless-stopped
     image:
       redis:7.4
-    ports:
-      - "7379:6379"
+#    ports:
+#      - "7379:6379"
 
   booking_back:
+    restart:
+      unless-stopped
     build:
       context: .
-    ports:
-      - "7777:8000"
+#    ports:
+#      - "7777:8000"
     env_file:
       .env
     environment:
@@ -36,7 +42,7 @@ services:
     env_file:
       ".env"
     depends_on:
-      - booking_db
+      - booking_back
     command:
       celery --app=src.tasks.celery_app:celery_instance worker -l INFO
 
@@ -46,9 +52,21 @@ services:
     env_file:
       .env
     depends_on:
-      - booking_db
+      - booking_back
     command:
       celery --app=src.tasks.celery_app:celery_instance beat -l INFO
+
+  booking_nginx:
+    restart:
+      unless-stopped
+    image:
+      nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - booking_back
 
 volumes:
   pg-booking-data:
