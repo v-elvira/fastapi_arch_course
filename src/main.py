@@ -47,7 +47,7 @@ async def run_regular_sender():
     while True:
         print('Regular hello')  # OK
         await send_daily_checkins()  # first real DB connection attempt on FastAPI startup will be in this function
-        await asyncio.sleep(777)
+        await asyncio.sleep(60*60*24)
 
 
 @asynccontextmanager

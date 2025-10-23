@@ -12,6 +12,6 @@ celery_instance = Celery(
 celery_instance.conf.beat_schedule = {
     'any-name': {
         'task': 'booking_today_checkin',
-        'schedule': 5,
+        'schedule': 60*60*24,
     }
 }
