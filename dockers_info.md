@@ -51,3 +51,32 @@ docker rm $(docker ps -aqf name='^booking')
 OR
 docker rm -f $(docker ps -q)
 ```
+
+### CERTBOT (SSL Cert)
+
+'''https://phoenixnap.com/kb/letsencrypt-docker''' let\'s encrypt SSL
+
+(docker compose <-> docker-compose)
+```
+docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
+docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d` [domain-name]
+```
+ =>
+````
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/my-samples.ru/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/my-samples.ru/privkey.pem
+This certificate expires on 2026-01-23.
+````
+(certbot container removed, but /etc/letsencrypt mapped to /certbot/conf, see docker-compose.yaml)
+
+SO getting certificates first time => add 443 to nginx.conf =>
+```
+docker-compose restart
+OR
+docker-compose exec booking_nginx nginx -s reload
+```
+In three months:
+````
+docker-compose run --rm certbot renew
+````

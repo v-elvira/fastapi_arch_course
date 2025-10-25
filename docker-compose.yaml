@@ -72,10 +72,19 @@ services:
       nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/www/:/var/www/certbot/:ro   # step 1: certbot will use it for verifications
+      - ./certbot/conf/:/etc/nginx/ssl/:ro    # step 2: after certbot certonly run (see in .md) certs will be here
     depends_on:
       - booking_back
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
 
 volumes:
   pg-booking-data:
@@ -91,3 +100,7 @@ volumes:
 
 # [instead of forever healthcheck on first startup:]
 # docker-compose run --rm booking_db to initialize DB and create volume first time, then stop and up (?)
+
+# docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
+# docker-compose run --rm certbot renew
+# details in dockers_info.md
