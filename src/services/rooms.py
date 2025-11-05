@@ -1,5 +1,5 @@
 from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundException, RoomNotFoundException, \
-    RoomNotFoundHTTPException, HotelNotFoundException
+    HotelNotFoundException
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomWithRels, RoomAddBody, RoomAdd, RoomPatch
 from src.services.base import BaseService
@@ -17,8 +17,9 @@ class RoomService(BaseService):
 
 
     async def delete_room(self, room_id: int, hotel_id: int):
+        await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
         if not await self.db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id):
-            raise RoomNotFoundHTTPException
+            raise RoomNotFoundException
         await self.db.rooms.delete(hotel_id=hotel_id, id=room_id)
         await self.db.commit()
 
@@ -68,6 +69,6 @@ class RoomService(BaseService):
 
     async def get_room_with_check(self, hotel_id: int, room_id: int):
         try:
-            self.db.rooms.get_one(hotel_id=hotel_id, id=room_id)
+            await self.db.rooms.get_one(hotel_id=hotel_id, id=room_id)
         except ObjectNotFoundException:
-            return RoomNotFoundException
+            raise RoomNotFoundException

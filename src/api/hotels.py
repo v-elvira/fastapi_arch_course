@@ -4,7 +4,8 @@ from fastapi.params import Query
 from fastapi_cache.decorator import cache
 
 from src.api.dependencies import PaginationDep, DBDep
-from src.exceptions import ObjectNotFoundException, HotelNotFoundHTTPException, check_date_to_is_after_date_from
+from src.exceptions import HotelNotFoundHTTPException, HotelNotFoundException, \
+    ObjectExistsException, HotelExistsHTTPException
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 
 from typing import List
@@ -21,8 +22,8 @@ async def get_hotels(
     db: DBDep,
     title: str | None = Query(None, description='Hotel title'),
     location: str | None = Query(None, description='Location fragment'),
-    date_from: date = Query(examples=['2024-08-01']),
-    date_to: date = Query(examples=['2024-08-10']),
+    date_from: date = Query(example='2024-08-01'),
+    date_to: date = Query(example='2024-08-10'),
 ) -> List[Hotel]:
     return await HotelService(db).get_filtered_by_date(pagination, title, location, date_from, date_to)
 
@@ -31,14 +32,18 @@ async def get_hotels(
 @cache(30)
 async def get_hotel(hotel_id: int, db: DBDep) -> Hotel:
     try:
-        return await HotelService(db).get_hotel(hotel_id)
-    except ObjectNotFoundException:
+        return await HotelService(db).get_hotel_with_check(hotel_id)
+    except HotelNotFoundException:
         raise HotelNotFoundHTTPException
 
 
 @router.delete('/{hotel_id}')
 async def delete_hotel(hotel_id: int, db: DBDep) -> dict:
-    await HotelService(db).delete_hotel(hotel_id)
+    try:
+        await HotelService(db).delete_hotel(hotel_id)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+
     return {'status': 'OK'}
 
 
@@ -65,7 +70,10 @@ async def create_hotel(
     ),
 ) -> dict:
     # )) -> dict:   # PydanticSerializationError: Unable to serialize unknown type: <class 'src.models.hotels.HotelsORM'>
-    hotel = await HotelService(db).add_hotel(hotel_data)
+    try:
+        hotel = await HotelService(db).add_hotel(hotel_data)
+    except ObjectExistsException:
+        raise HotelExistsHTTPException
 
     return {'status': 'OK', 'data': hotel}
 
@@ -76,7 +84,10 @@ async def replace_hotel(
     hotel_data: HotelAdd,
     db: DBDep,
 ) -> dict[str, Hotel | str]:
-    hotel = await HotelService(db).replace_hotel(hotel_id, hotel_data)
+    try:
+        hotel = await HotelService(db).replace_hotel(hotel_id, hotel_data)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
     return {'status': 'OK', 'new_hotel': hotel}
 
 
@@ -86,5 +97,8 @@ async def edit_hotel(
     hotel_data: HotelPatch,
     db: DBDep,
 ) -> dict[str, Hotel | str]:
-    hotel = await HotelService(db).edit_hotel(hotel_id, hotel_data)
+    try:
+        hotel = await HotelService(db).edit_hotel(hotel_id, hotel_data)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
     return {'status': 'OK', 'edited_hotel': hotel}

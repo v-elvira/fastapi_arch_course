@@ -3,7 +3,7 @@ from src.schemas.common import CommonBaseModel
 
 
 class FacilityAdd(CommonBaseModel):
-    title: str = Field(max_length=100)
+    title: str = Field(min_length=2, max_length=100)
 
 
 class Facility(FacilityAdd):

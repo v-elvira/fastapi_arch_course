@@ -31,9 +31,9 @@ class RoomsRepository(BaseRepository):
         query = select(self.model).filter_by(**filter_by).options(selectinload(self.model.facilities))
         result = await self.session.execute(query)
         try:
-            model_item = result.scalars_one()  # =  scalars().one()
+            model_item = result.scalar_one()  # =  scalars().one()
         except NoResultFound:
-            return RoomNotFoundException
+            raise RoomNotFoundException
         return RoomWithRelsDataMapper.map_to_domain_entity(model_item)
 
     # async def get_all(self, hotel_id, title, description, price, quantity):

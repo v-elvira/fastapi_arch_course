@@ -1,10 +1,10 @@
-from pydantic import EmailStr
+from pydantic import EmailStr, Field
 from src.schemas.common import CommonBaseModel
 
 
 class UserRequestAdd(CommonBaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=3, max_length=100)
 
 
 class UserAdd(CommonBaseModel):

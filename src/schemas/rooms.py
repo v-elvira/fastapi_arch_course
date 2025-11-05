@@ -1,9 +1,10 @@
+from pydantic import Field
 from src.schemas.common import CommonBaseModel
 from src.schemas.facilities import Facility
 
 
 class RoomAddBody(CommonBaseModel):
-    title: str
+    title: str = Field(min_length=1, max_length=100)
     description: str | None = None
     price: int
     quantity: int
@@ -12,7 +13,7 @@ class RoomAddBody(CommonBaseModel):
 
 class RoomAdd(CommonBaseModel):
     hotel_id: int
-    title: str
+    title: str = Field(min_length=1, max_length=100)
     description: str | None = None
     price: int
     quantity: int
@@ -27,7 +28,7 @@ class RoomWithRels(Room):
 
 
 class RoomPatch(CommonBaseModel):
-    title: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=100)
     description: str | None = None
     price: int | None = None
     quantity: int | None = None

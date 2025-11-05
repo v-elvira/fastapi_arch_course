@@ -30,8 +30,8 @@ router = APIRouter(prefix='/hotels', tags=['Rooms'])
 async def get_rooms(
     db: DBDep,
     hotel_id: int = Path(description='Hotel id'),
-    date_from: date = Query(examples=['2024-09-01']),
-    date_to: date = Query(examples=['2025-12-01']),
+    date_from: date = Query(example='2024-09-01'),
+    date_to: date = Query(example='2025-12-01'),
 ) -> list[RoomWithRels]:
     return await RoomService(db).get_filtered_by_date(hotel_id, date_from, date_to)
 
@@ -40,14 +40,19 @@ async def get_rooms(
 @cache(expire=10)
 async def get_room(hotel_id: int, room_id: int, db: DBDep) -> RoomWithRels:
     try:
-        return await RoomService(db).get_room(hotel_id=hotel_id, id=room_id)
+        return await RoomService(db).get_room(hotel_id=hotel_id, room_id=room_id)
     except RoomNotFoundException:
-        RoomNotFoundHTTPException
+        raise RoomNotFoundHTTPException
 
 
 @router.delete('/{hotel_id}/rooms/{room_id}')
 async def delete_room(hotel_id: int, room_id: int, db: DBDep) -> dict:
-    await RoomService(db).delete_room(id=room_id, hotel_id=hotel_id)
+    try:
+        await RoomService(db).delete_room(room_id=room_id, hotel_id=hotel_id)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
     return {'status': 'OK'}
 
 
@@ -93,7 +98,7 @@ async def replace_room(
     except HotelNotFoundException:
         raise HotelNotFoundHTTPException
     except RoomNotFoundException:
-        RoomNotFoundHTTPException
+        raise RoomNotFoundHTTPException
     return {'status': 'OK', 'new_room': room}
 
 
@@ -105,7 +110,7 @@ async def edit_room(
     db: DBDep,
 ) -> Mapping[str, Room | str]:
     try:
-        room = RoomService(db).edit_room(hotel_id=hotel_id, room_id=room_id, room_data=room_data)
+        room = await RoomService(db).edit_room(hotel_id=hotel_id, room_id=room_id, room_data=room_data)
     except HotelNotFoundException:
         raise HotelNotFoundHTTPException
     except RoomNotFoundException:

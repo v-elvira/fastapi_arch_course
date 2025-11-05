@@ -1,6 +1,7 @@
 from datetime import date
 from src.api.dependencies import PaginationParams
-from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundException, HotelNotFoundException
+from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundException, HotelNotFoundException, \
+    ObjectExistsException
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 from src.services.base import BaseService
 
@@ -22,20 +23,25 @@ class HotelService(BaseService):
         return await self.db.hotels.get_one(id=hotel_id)
 
     async def delete_hotel(self, hotel_id: int):
+        await self.get_hotel_with_check(hotel_id)
         await self.db.hotels.delete(id=hotel_id)
         await self.db.commit()
 
     async def add_hotel(self, data: HotelAdd):
+        if await self.db.hotels.get_filtered(**data.model_dump()):
+            raise ObjectExistsException
         hotel = await self.db.hotels.add(data)
         await self.db.commit()
         return hotel
 
     async def replace_hotel(self, hotel_id: int, hotel_data: HotelAdd):
+        await self.get_hotel_with_check(hotel_id)
         hotel = await self.db.hotels.edit(hotel_data, id=hotel_id)
         await self.db.commit()
         return hotel
 
     async def edit_hotel(self, hotel_id: int, hotel_data: HotelPatch):
+        await self.get_hotel_with_check(hotel_id)
         hotel = await self.db.hotels.edit(hotel_data, exclude_unset=True, id=hotel_id)
         await self.db.commit()
         return hotel
@@ -44,4 +50,4 @@ class HotelService(BaseService):
         try:
             return await self.db.hotels.get_one(id=hotel_id)
         except ObjectNotFoundException:
-            return HotelNotFoundException
+            raise HotelNotFoundException

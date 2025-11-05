@@ -43,8 +43,8 @@ class NotAllowedException(BaseException):
     detail = 'Action is not allowed for user'
 
 def check_date_to_is_after_date_from(date_from: date, date_to: date):
-    if date_to < date_from:
-        raise HTTPException(status_code=400, detail='Date from is later than date to')
+    if date_to <= date_from:
+        raise HTTPException(status_code=400, detail='Date to must be later than date from')
 
 
 class BaseHTTPException(HTTPException):
@@ -55,13 +55,21 @@ class BaseHTTPException(HTTPException):
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
-class RoomNotFoundHTTPException():
+class RoomNotFoundHTTPException(BaseHTTPException):
     status_code = 404
     detail = 'Room not found'
 
-class HotelNotFoundHTTPException():
+class HotelNotFoundHTTPException(BaseHTTPException):
     status_code = 404
     detail = 'Hotel not found'
+
+class HotelExistsHTTPException(BaseHTTPException):
+    status_code = 409
+    detail = 'Hotel with the same data already exists'
+
+class FacilityExistsHTTPException(BaseHTTPException):
+    status_code = 409
+    detail = 'Facility already exists'
 
 class InvalidTokenHTTPException(BaseHTTPException):
     status_code = 401

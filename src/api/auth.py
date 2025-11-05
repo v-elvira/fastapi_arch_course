@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Response, status, HTTPException
+from fastapi import APIRouter, Response, status, Depends
 
-from src.api.dependencies import UserIdDep, DBDep
-from src.exceptions import ObjectExistsException, WrongEmailPasswordException, WrongEmailPasswordHTTPException, \
+from src.api.dependencies import UserIdDep, DBDep, get_token
+from src.exceptions import WrongEmailPasswordException, WrongEmailPasswordHTTPException, \
     UserExistsException, UserExistsHTTPException
-from src.schemas.users import UserRequestAdd, UserAdd, User
+from src.schemas.users import UserRequestAdd, User
 from src.services.auth import AuthService
 
 router = APIRouter(prefix='/auth', tags=['User auth'])  # , dependencies=...) for the whole route Deps
@@ -35,6 +35,6 @@ async def get_me(user_id: UserIdDep, db: DBDep) -> User | None:
 
 
 @router.post('/logout')
-async def logout_user(response: Response) -> dict:
+async def logout_user(response: Response, token: str = Depends(get_token)) -> dict:
     response.delete_cookie('access_token')
     return {'status': 'ok'}
