@@ -3,6 +3,7 @@ from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundExcep
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomWithRels, RoomAddBody, RoomAdd, RoomPatch
 from src.services.base import BaseService
+from src.services.facility import FacilityService
 from src.services.hotels import HotelService
 
 
@@ -13,6 +14,7 @@ class RoomService(BaseService):
 
 
     async def get_room(self, hotel_id: int, room_id: int) -> RoomWithRels:
+        await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
         return await self.db.rooms.get_one_with_rels(hotel_id=hotel_id, id=room_id)
 
 
@@ -29,6 +31,8 @@ class RoomService(BaseService):
             await self.db.hotels.get_one(id=hotel_id)
         except ObjectNotFoundException:
             raise HotelNotFoundException
+        await FacilityService(self.db).check_facilities_ids(room_data.facilities_ids)
+
         room_add_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
         room = await self.db.rooms.add(room_add_data)
 
@@ -43,6 +47,7 @@ class RoomService(BaseService):
     async def replace_room(self, hotel_id: int, room_id: int, room_data: RoomAddBody):
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
         await self.get_room_with_check(hotel_id=hotel_id, room_id=room_id)
+        await FacilityService(self.db).check_facilities_ids(room_data.facilities_ids)
 
         await self.db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)
         del room_data.facilities_ids
@@ -55,6 +60,7 @@ class RoomService(BaseService):
     async def edit_room(self, hotel_id: int, room_id: int, room_data: RoomPatch):
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
         await self.get_room_with_check(hotel_id=hotel_id, room_id=room_id)
+        await FacilityService(self.db).check_facilities_ids(room_data.facilities_ids)
 
         if room_data.facilities_ids is not None:
             await self.db.room_facilities.set_room_facilities(room_id, room_data.facilities_ids)

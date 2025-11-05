@@ -5,7 +5,7 @@ from typing import Mapping
 
 from src.api.dependencies import DBDep
 from src.exceptions import (RoomNotFoundHTTPException, HotelNotFoundHTTPException,
-                            RoomNotFoundException, HotelNotFoundException)
+                            RoomNotFoundException, HotelNotFoundException, UnknownFacilityError, FacilityNotFoundHTTPError)
 
 from src.schemas.rooms import RoomPatch, Room, RoomAddBody, RoomWithRels
 from fastapi_cache.decorator import cache
@@ -41,6 +41,8 @@ async def get_rooms(
 async def get_room(hotel_id: int, room_id: int, db: DBDep) -> RoomWithRels:
     try:
         return await RoomService(db).get_room(hotel_id=hotel_id, room_id=room_id)
+    except HotelNotFoundException:
+        raise HotelNotFoundHTTPException
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
 
@@ -83,6 +85,8 @@ async def create_room(
         room = await RoomService(db).create_room(hotel_id, room_data)
     except HotelNotFoundException:
         raise HotelNotFoundHTTPException
+    except UnknownFacilityError:
+        raise FacilityNotFoundHTTPError
     return {'status': 'OK', 'data': room}
 
 
@@ -99,6 +103,8 @@ async def replace_room(
         raise HotelNotFoundHTTPException
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
+    except UnknownFacilityError:
+        raise FacilityNotFoundHTTPError
     return {'status': 'OK', 'new_room': room}
 
 
@@ -115,6 +121,8 @@ async def edit_room(
         raise HotelNotFoundHTTPException
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
+    except UnknownFacilityError:
+        raise FacilityNotFoundHTTPError
 
     response = {'status': 'OK'}
     if room:

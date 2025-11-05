@@ -5,7 +5,7 @@ from src.api.dependencies import DBDep, UserIdDep
 from src.schemas.bookings import Booking, BookingAddBody, BookingPatch
 from src.exceptions import NoFreeRoomException, RoomNotFoundException, RoomNotFoundHTTPException, \
     NoFreeRoomHTTPException, BookingNotFoundException, BookingNotFoundHTTPException, NotAllowedException, \
-    BookingEditingNotAllowedHTTPException
+    BookingEditingNotAllowedHTTPException, check_date_to_is_after_date_from
 from src.services.booking import BookingService
 
 router = APIRouter(prefix='/bookings', tags=['Bookings'])
@@ -17,6 +17,7 @@ async def create_booking(
     user_id: UserIdDep,
     booking_data: BookingAddBody = Body(),
 ) -> dict[str, str | Booking]:
+    check_date_to_is_after_date_from(booking_data.date_from, booking_data.date_to)
     try:
         booking = await BookingService(db).create_booking(user_id=user_id, booking_data=booking_data)
     except RoomNotFoundException:

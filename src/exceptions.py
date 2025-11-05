@@ -42,7 +42,10 @@ class UserExistsException(ObjectExistsException):
 class NotAllowedException(BaseException):
     detail = 'Action is not allowed for user'
 
-def check_date_to_is_after_date_from(date_from: date, date_to: date):
+class UnknownFacilityError(BaseException):
+    detail = 'Unknown id in facilities_ids list'
+
+def check_date_to_is_after_date_from(date_from: date, date_to: date):  # may be moving this to schemas would be better?
     if date_to <= date_from:
         raise HTTPException(status_code=400, detail='Date to must be later than date from')
 
@@ -102,3 +105,7 @@ class BookingNotFoundHTTPException(BaseHTTPException):
 class BookingEditingNotAllowedHTTPException(BaseHTTPException):
     status_code = 401
     detail = 'Current user has no right to edit this booking'
+
+class FacilityNotFoundHTTPError(BaseHTTPException):
+    status_code = 404
+    detail = 'Facility not found (unknown facility id)'
