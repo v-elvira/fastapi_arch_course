@@ -17,7 +17,6 @@ async def create_booking(
     user_id: UserIdDep,
     booking_data: BookingAddBody = Body(),
 ) -> dict[str, str | Booking]:
-    check_date_to_is_after_date_from(booking_data.date_from, booking_data.date_to)
     try:
         booking = await BookingService(db).create_booking(user_id=user_id, booking_data=booking_data)
     except RoomNotFoundException:

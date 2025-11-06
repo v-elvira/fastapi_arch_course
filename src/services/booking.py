@@ -1,5 +1,5 @@
 from src.exceptions import ObjectNotFoundException, RoomNotFoundException, NoFreeRoomException, \
-    BookingNotFoundException, NotAllowedException
+    BookingNotFoundException, NotAllowedException, check_date_to_is_after_date_from
 from src.schemas.bookings import BookingAddBody, BookingAdd, BookingPatch
 from src.services.base import BaseService
 
@@ -12,6 +12,7 @@ class BookingService(BaseService):
         return await self.db.bookings.get_filtered(user_id=user_id)
 
     async def create_booking(self, user_id: int, booking_data: BookingAddBody):
+        check_date_to_is_after_date_from(booking_data.date_from, booking_data.date_to)  # HTTPError is not good in Service
         try:
             room = await self.db.rooms.get_one(id=booking_data.room_id)
         except ObjectNotFoundException:
