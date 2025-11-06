@@ -109,3 +109,7 @@ class BookingEditingNotAllowedHTTPException(BaseHTTPException):
 class FacilityNotFoundHTTPError(BaseHTTPException):
     status_code = 404
     detail = 'Facility not found (unknown facility id)'
+
+class FailedToDeleteHTTPException(BaseHTTPException):
+    status_code = 409
+    detail = 'Failed to delete'

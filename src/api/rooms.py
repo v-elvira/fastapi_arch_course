@@ -3,9 +3,12 @@ from fastapi import Body, APIRouter
 from fastapi.params import Query, Path
 from typing import Mapping
 
+from sqlalchemy.exc import IntegrityError
+
 from src.api.dependencies import DBDep
 from src.exceptions import (RoomNotFoundHTTPException, HotelNotFoundHTTPException,
-                            RoomNotFoundException, HotelNotFoundException, UnknownFacilityError, FacilityNotFoundHTTPError)
+                            RoomNotFoundException, HotelNotFoundException, UnknownFacilityError,
+                            FacilityNotFoundHTTPError, FailedToDeleteHTTPException)
 
 from src.schemas.rooms import RoomPatch, Room, RoomAddBody, RoomWithRels
 from fastapi_cache.decorator import cache
@@ -55,6 +58,8 @@ async def delete_room(hotel_id: int, room_id: int, db: DBDep) -> dict:
         raise HotelNotFoundHTTPException
     except RoomNotFoundException:
         raise RoomNotFoundHTTPException
+    except IntegrityError:
+        raise FailedToDeleteHTTPException
     return {'status': 'OK'}
 
 

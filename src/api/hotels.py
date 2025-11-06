@@ -2,10 +2,11 @@ from datetime import date
 from fastapi import Body, APIRouter
 from fastapi.params import Query
 from fastapi_cache.decorator import cache
+from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import PaginationDep, DBDep
 from src.exceptions import HotelNotFoundHTTPException, HotelNotFoundException, \
-    ObjectExistsException, HotelExistsHTTPException
+    ObjectExistsException, HotelExistsHTTPException, FailedToDeleteHTTPException
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 
 from typing import List
@@ -43,6 +44,8 @@ async def delete_hotel(hotel_id: int, db: DBDep) -> dict:
         await HotelService(db).delete_hotel(hotel_id)
     except HotelNotFoundException:
         raise HotelNotFoundHTTPException
+    except IntegrityError:
+        raise FailedToDeleteHTTPException
 
     return {'status': 'OK'}
 
