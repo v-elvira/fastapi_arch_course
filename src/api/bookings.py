@@ -1,11 +1,11 @@
 from typing import List
-from fastapi import Body, APIRouter, HTTPException
+from fastapi import Body, APIRouter
 
 from src.api.dependencies import DBDep, UserIdDep
 from src.schemas.bookings import Booking, BookingAddBody, BookingPatch
 from src.exceptions import NoFreeRoomException, RoomNotFoundException, RoomNotFoundHTTPException, \
     NoFreeRoomHTTPException, BookingNotFoundException, BookingNotFoundHTTPException, NotAllowedException, \
-    BookingEditingNotAllowedHTTPException, check_date_to_is_after_date_from
+    BookingEditingNotAllowedHTTPException
 from src.services.booking import BookingService
 
 router = APIRouter(prefix='/bookings', tags=['Bookings'])
