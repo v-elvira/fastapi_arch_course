@@ -29,12 +29,13 @@ services:
   booking_back:
     restart:
       unless-stopped
-    build:
-      context: .
+    image:
+      booking-api-image:latest
 #    ports:
 #      - "7777:8000"
-    env_file:
-      .env
+
+#    env_file: # ENV in gitlab
+#      .env
     environment:
       - PYTHONUNBUFFERED=1
     depends_on:
@@ -46,20 +47,16 @@ services:
 #        condition: service_started  # default
 
   booking_celery_worker:
-    build:
-      context: .
-    env_file:
-      ".env"
+    image:
+      booking-api-image:latest
     depends_on:
       - booking_back
     command:
       celery --app=src.tasks.celery_app:celery_instance worker -l INFO
 
   booking_celery_beat:
-    build:
-      context: .
-    env_file:
-      .env
+    image:
+      booking-api-image:latest
     depends_on:
       - booking_back
     command:
