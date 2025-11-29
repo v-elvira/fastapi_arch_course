@@ -1,9 +1,9 @@
 stages:          # List of stages for jobs, and their order of execution
   - build
-#  - test
+  - test
   - deploy
 
-build-job:       # This job runs in the build stage, which runs first.
+build-job:
   stage: build
   before_script:
     - cp ${ENV} .env
@@ -11,19 +11,18 @@ build-job:       # This job runs in the build stage, which runs first.
     - echo "Starting build-job..."
     - docker build -t booking-api-image .
 
-#unit-test-job:   # This job runs in the test stage.
-#  stage: test    # It only starts when the job in the build stage completes successfully.
-#  script:
-#    - echo "Running unit tests..."
-#
-#lint-test-job:   # This job also runs in the test stage.
-#  stage: test    # It can run at the same time as unit-test-job (in parallel).
-#  script:
-#    - echo "Linting code..."
-#    - sleep 5
+lint-job:
+  stage: test
+  script:
+    - docker run --rm booking-api-image ruff check
 
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+format-check-job:
+  stage: test
+  script:
+    - ruff format --check
+
+deploy-job:
+  stage: deploy
   before_script:
     - cp ${ENV} .env
   script:
