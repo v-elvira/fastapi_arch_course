@@ -99,7 +99,11 @@ get TOKEN-FROM-GITLAB: (Project, Settings -> CI/CD -> Runners -> Create project 
       --url https://gitlab.com \
       --token TOKEN-FROM-GITLAB
 ```
+<<<<<<<< HEAD:dockers_etc_info.md
 DIALOG: executor: docker, image: docker:dind
+========
+DIALOG: type: docker, image: docker:dind
+>>>>>>>> refs/remotes/origin/main:dockers_info.md
 
 To enable starting real docker containers on server (not only inside gitlab-runner container):
 nano /srv/gitlab-runner/config/config.toml
