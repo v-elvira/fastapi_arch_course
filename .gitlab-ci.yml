@@ -21,6 +21,11 @@ format-check:
   script:
     - docker run --rm booking-api-image ruff format --check
 
+pytest:
+  stage: test
+  script:
+    - docker run --rm booking-api-image pytest -s -v
+
 deploy:
   stage: deploy
   before_script:
