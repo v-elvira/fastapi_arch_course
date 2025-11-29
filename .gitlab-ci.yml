@@ -9,8 +9,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - cp ${ENV} .env
   script:
     - echo "Starting build-job..."
-#    - docker build -t booking-api-image .
-    - docker compose build
+    - docker build -t booking-api-image .
 
 #unit-test-job:   # This job runs in the test stage.
 #  stage: test    # It only starts when the job in the build stage completes successfully.
@@ -25,11 +24,9 @@ build-job:       # This job runs in the build stage, which runs first.
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  before_script:
-    - cp ${ENV} .env
   script:
     - echo "Deploying application..."
 #    - docker compose --file docker-compose-ci.yml restart booking_back booking_celery_worker booking_celery_beat
 #    - docker compose restart booking_back booking_celery_worker booking_celery_beat
-    - docker compose up
+    - docker compose --file docker-compose-api.yml up
     - echo "Application successfully deployed."

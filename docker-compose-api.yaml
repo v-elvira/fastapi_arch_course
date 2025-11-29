@@ -1,0 +1,34 @@
+services:
+  booking_back:
+    restart:
+      unless-stopped
+    image:
+      booking-api-image:latest
+    networks:
+      booking_network
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  booking_celery_worker:
+    image:
+      booking-api-image:latest
+    restart:
+      unless-stopped
+    networks:
+      booking_network
+    command:
+      celery --app=src.tasks.celery_app:celery_instance worker -l INFO
+
+  booking_celery_beat:
+    image:
+      booking-api-image:latest
+    restart:
+      unless-stopped
+    networks:
+      booking_network
+    command:
+      celery --app=src.tasks.celery_app:celery_instance beat -l INFO
+
+networks:
+  booking_network
+
