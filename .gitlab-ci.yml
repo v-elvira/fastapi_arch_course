@@ -28,5 +28,5 @@ deploy-job:      # This job runs in the deploy stage.
     - echo "Deploying application..."
 #    - docker compose --file docker-compose-ci.yml restart booking_back booking_celery_worker booking_celery_beat
 #    - docker compose restart booking_back booking_celery_worker booking_celery_beat
-    - docker compose --file docker-compose-api.yml up
+    - docker compose --file docker-compose-api.yml up -d
     - echo "Application successfully deployed."
