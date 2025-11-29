@@ -24,6 +24,8 @@ build-job:       # This job runs in the build stage, which runs first.
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  before_script:
+    - cp ${ENV} .env
   script:
     - echo "Deploying application..."
     - docker compose --file docker-compose-api.yml up -d
