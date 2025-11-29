@@ -5,8 +5,13 @@ from fastapi_cache.decorator import cache
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import PaginationDep, DBDep
-from src.exceptions import HotelNotFoundHTTPException, HotelNotFoundException, \
-    ObjectExistsException, HotelExistsHTTPException, FailedToDeleteHTTPException
+from src.exceptions import (
+    HotelNotFoundHTTPException,
+    HotelNotFoundException,
+    ObjectExistsException,
+    HotelExistsHTTPException,
+    FailedToDeleteHTTPException,
+)
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 
 from typing import List

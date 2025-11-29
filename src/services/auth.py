@@ -3,8 +3,13 @@ import jwt  # PyJWT in requirements
 
 from passlib.context import CryptContext
 from src.config import settings
-from src.exceptions import WrongEmailPasswordException, InvalidTokenException, ExpiredTokenException, \
-    ObjectExistsException, UserExistsException
+from src.exceptions import (
+    WrongEmailPasswordException,
+    InvalidTokenException,
+    ExpiredTokenException,
+    ObjectExistsException,
+    UserExistsException,
+)
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.services.base import BaseService
 
@@ -36,22 +41,22 @@ class AuthService(BaseService):
             raise ExpiredTokenException
 
     async def login_user(self, user_data: UserRequestAdd) -> str:
-            user = await self.db.users.get_user_with_hashed_password(email=user_data.email)
-            if not user or not self.verify_password(user_data.password, user.hashed_password):
-                raise WrongEmailPasswordException
-            return self.create_access_token({'user_id': user.id})
+        user = await self.db.users.get_user_with_hashed_password(email=user_data.email)
+        if not user or not self.verify_password(user_data.password, user.hashed_password):
+            raise WrongEmailPasswordException
+        return self.create_access_token({'user_id': user.id})
 
     async def register(self, user_data: UserRequestAdd):
-            new_data = UserRequestAdd.model_dump(user_data)
-            new_data['hashed_password'] = self.hash_password(user_data.password)
-            del new_data['password']
-            new_user_data = UserAdd(**new_data)
-            try:
-                user = await self.db.users.add(new_user_data)
-            except ObjectExistsException:
-                raise UserExistsException
-            await self.db.commit()
-            return user
+        new_data = UserRequestAdd.model_dump(user_data)
+        new_data['hashed_password'] = self.hash_password(user_data.password)
+        del new_data['password']
+        new_user_data = UserAdd(**new_data)
+        try:
+            user = await self.db.users.add(new_user_data)
+        except ObjectExistsException:
+            raise UserExistsException
+        await self.db.commit()
+        return user
 
     async def get_user(self, user_id: int):
         user = await self.db.users.get_one_or_none(id=user_id)

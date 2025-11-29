@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Response, status, Depends
 
 from src.api.dependencies import UserIdDep, DBDep, get_token
-from src.exceptions import WrongEmailPasswordException, WrongEmailPasswordHTTPException, \
-    UserExistsException, UserExistsHTTPException
+from src.exceptions import (
+    WrongEmailPasswordException,
+    WrongEmailPasswordHTTPException,
+    UserExistsException,
+    UserExistsHTTPException,
+)
 from src.schemas.users import UserRequestAdd, User
 from src.services.auth import AuthService
 
@@ -29,7 +33,7 @@ async def register(user_data: UserRequestAdd, db: DBDep) -> dict[str, str | User
     return {'status': 'OK', 'user': user}
 
 
-@router.get('/me', summary="Get me 👀")
+@router.get('/me', summary='Get me 👀')
 async def get_me(user_id: UserIdDep, db: DBDep) -> User | None:
     return await AuthService(db).get_user(user_id)
 

@@ -36,6 +36,6 @@ class RoomPatch(CommonBaseModel):
 
     @model_validator(mode='after')
     def all_empty_not_allowed(self):
-        if not any ((self.title,  self.description, self.price, self.quantity, self.facilities_ids)):
+        if not any((self.title, self.description, self.price, self.quantity, self.facilities_ids)):
             raise ValueError('All empty fields are not allowed')
         return self

@@ -1,5 +1,9 @@
-from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundException, RoomNotFoundException, \
-    HotelNotFoundException
+from src.exceptions import (
+    check_date_to_is_after_date_from,
+    ObjectNotFoundException,
+    RoomNotFoundException,
+    HotelNotFoundException,
+)
 from src.schemas.facilities import RoomFacilityAdd
 from src.schemas.rooms import RoomWithRels, RoomAddBody, RoomAdd, RoomPatch
 from src.services.base import BaseService
@@ -12,11 +16,9 @@ class RoomService(BaseService):
         check_date_to_is_after_date_from(date_from, date_to)
         return await self.db.rooms.get_filtered_by_date(hotel_id, date_from, date_to)
 
-
     async def get_room(self, hotel_id: int, room_id: int) -> RoomWithRels:
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
         return await self.db.rooms.get_one_with_rels(hotel_id=hotel_id, id=room_id)
-
 
     async def delete_room(self, room_id: int, hotel_id: int):
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
@@ -24,7 +26,6 @@ class RoomService(BaseService):
             raise RoomNotFoundException
         await self.db.rooms.delete(hotel_id=hotel_id, id=room_id)
         await self.db.commit()
-
 
     async def create_room(self, hotel_id: int, room_data: RoomAddBody):
         try:
@@ -37,12 +38,13 @@ class RoomService(BaseService):
         room = await self.db.rooms.add(room_add_data)
 
         if room_data.facilities_ids:
-            room_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
+            room_facilities_data = [
+                RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids
+            ]
             await self.db.room_facilities.add_bulk(room_facilities_data)
 
         await self.db.commit()
         return room
-
 
     async def replace_room(self, hotel_id: int, room_id: int, room_data: RoomAddBody):
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
@@ -55,7 +57,6 @@ class RoomService(BaseService):
         room = await self.db.rooms.edit(room_data, id=room_id)
         await self.db.commit()
         return room
-
 
     async def edit_room(self, hotel_id: int, room_id: int, room_data: RoomPatch):
         await HotelService(self.db).get_hotel_with_check(hotel_id=hotel_id)
@@ -71,7 +72,6 @@ class RoomService(BaseService):
             edited_room = await self.db.rooms.edit(room_data, exclude_unset=True, hotel_id=hotel_id, id=room_id)
         await self.db.commit()
         return edited_room
-
 
     async def get_room_with_check(self, hotel_id: int, room_id: int):
         try:

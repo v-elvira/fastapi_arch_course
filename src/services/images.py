@@ -1,6 +1,6 @@
 import shutil
 
-from fastapi import UploadFile              # from fastapi: not good for Service idea
+from fastapi import UploadFile  # from fastapi: not good for Service idea
 from starlette.background import BackgroundTask
 
 from src.services.base import BaseService

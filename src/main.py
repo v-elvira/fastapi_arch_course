@@ -47,7 +47,7 @@ async def run_regular_sender():
     while True:
         print('Regular hello')  # OK
         await send_daily_checkins()  # first real DB connection attempt on FastAPI startup will be in this function
-        await asyncio.sleep(60*60*24)
+        await asyncio.sleep(60 * 60 * 24)
 
 
 @asynccontextmanager
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     # on FastAPI startup
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager._redis), prefix='fastapi-cache')
-    logging.info("FastAPI cache initialized")
+    logging.info('FastAPI cache initialized')
     asyncio.create_task(run_regular_sender())
     yield
     # on FastAPI shutdown

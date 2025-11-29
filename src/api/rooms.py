@@ -6,9 +6,15 @@ from typing import Mapping
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import DBDep
-from src.exceptions import (RoomNotFoundHTTPException, HotelNotFoundHTTPException,
-                            RoomNotFoundException, HotelNotFoundException, UnknownFacilityError,
-                            FacilityNotFoundHTTPError, FailedToDeleteHTTPException)
+from src.exceptions import (
+    RoomNotFoundHTTPException,
+    HotelNotFoundHTTPException,
+    RoomNotFoundException,
+    HotelNotFoundException,
+    UnknownFacilityError,
+    FacilityNotFoundHTTPError,
+    FailedToDeleteHTTPException,
+)
 
 from src.schemas.rooms import RoomPatch, Room, RoomAddBody, RoomWithRels
 from fastapi_cache.decorator import cache

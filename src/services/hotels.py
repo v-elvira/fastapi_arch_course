@@ -1,23 +1,29 @@
 from datetime import date
 from src.api.dependencies import PaginationParams
-from src.exceptions import check_date_to_is_after_date_from, ObjectNotFoundException, HotelNotFoundException, \
-    ObjectExistsException
+from src.exceptions import (
+    check_date_to_is_after_date_from,
+    ObjectNotFoundException,
+    HotelNotFoundException,
+    ObjectExistsException,
+)
 from src.schemas.hotels import HotelAdd, HotelPatch, Hotel
 from src.services.base import BaseService
 
 
 class HotelService(BaseService):
     async def get_filtered_by_date(
-            self,
-            pagination: PaginationParams,
-            title: str,
-            location: str,
-            date_from: date,
-            date_to: date,
+        self,
+        pagination: PaginationParams,
+        title: str,
+        location: str,
+        date_from: date,
+        date_to: date,
     ):
         per_page = pagination.per_page or 5
         check_date_to_is_after_date_from(date_from, date_to)
-        return await self.db.hotels.get_filtered_by_date(date_from, date_to, location, title, per_page, pagination.start)
+        return await self.db.hotels.get_filtered_by_date(
+            date_from, date_to, location, title, per_page, pagination.start
+        )
 
     async def get_hotel(self, hotel_id: int):
         return await self.db.hotels.get_one(id=hotel_id)

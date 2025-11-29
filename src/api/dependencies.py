@@ -2,8 +2,13 @@ from fastapi import Query, Depends, Request
 from pydantic import model_validator, computed_field
 from typing import Annotated
 
-from src.exceptions import InvalidTokenException, InvalidTokenHTTPException, ExpiredTokenException, \
-    NoAccessTokenHTTPException, ExpiredTokenHTTPException
+from src.exceptions import (
+    InvalidTokenException,
+    InvalidTokenHTTPException,
+    ExpiredTokenException,
+    NoAccessTokenHTTPException,
+    ExpiredTokenHTTPException,
+)
 from src.services.auth import AuthService
 from src.database import async_session_maker
 from src.schemas.common import CommonBaseModel
