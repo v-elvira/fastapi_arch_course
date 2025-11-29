@@ -3,7 +3,7 @@ stages:          # List of stages for jobs, and their order of execution
   - test
   - deploy
 
-build-job:
+build:
   stage: build
   before_script:
     - cp ${ENV} .env
@@ -11,17 +11,17 @@ build-job:
     - echo "Starting build-job..."
     - docker build -t booking-api-image .
 
-lint-job:
+lint:
   stage: test
   script:
     - docker run --rm booking-api-image ruff check
 
-format-check-job:
+format-check:
   stage: test
   script:
-    - ruff format --check
+    - docker run --rm booking-api-image ruff format --check
 
-deploy-job:
+deploy:
   stage: deploy
   before_script:
     - cp ${ENV} .env
