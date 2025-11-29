@@ -29,7 +29,7 @@ async def register(user_data: UserRequestAdd, db: DBDep) -> dict[str, str | User
     return {'status': 'OK', 'user': user}
 
 
-@router.get('/me', summary="Get me ✅")
+@router.get('/me', summary="Get me 👀")
 async def get_me(user_id: UserIdDep, db: DBDep) -> User | None:
     return await AuthService(db).get_user(user_id)
 
