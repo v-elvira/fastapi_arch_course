@@ -5,7 +5,7 @@ services:
     image:
       booking-api-image:latest
     networks:
-      booking_network
+      - booking_network
     environment:
       - PYTHONUNBUFFERED=1
 
@@ -15,7 +15,7 @@ services:
     restart:
       unless-stopped
     networks:
-      booking_network
+      - booking_network
     command:
       celery --app=src.tasks.celery_app:celery_instance worker -l INFO
 
@@ -25,10 +25,10 @@ services:
     restart:
       unless-stopped
     networks:
-      booking_network
+      - booking_network
     command:
       celery --app=src.tasks.celery_app:celery_instance beat -l INFO
 
 networks:
-  - booking_network
+  booking_network:
 

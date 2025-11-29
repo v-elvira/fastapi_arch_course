@@ -7,7 +7,7 @@ services:
 #    ports:
 #      - '6432:5432'
     networks:
-      booking_network
+      - booking_network
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -26,54 +26,7 @@ services:
     image:
       redis:7.4
     networks:
-      booking_network
-#    ports:
-#      - "7379:6379"
-
-  booking_back:
-    restart:
-      unless-stopped
-    build:
-      context: .
-    networks:
-      booking_network
-#    ports:
-#      - "7777:8000"
-    env_file:
-      .env
-    environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      - booking_db
-      - booking_cache
-#      booking_db:
-#        condition: service_healthy
-#      booking_cache:
-#        condition: service_started  # default
-
-  booking_celery_worker:
-    build:
-      context: .
-    env_file:
-      ".env"
-    networks:
-      booking_network
-    depends_on:
-      - booking_back
-    command:
-      celery --app=src.tasks.celery_app:celery_instance worker -l INFO
-
-  booking_celery_beat:
-    build:
-      context: .
-    env_file:
-      .env
-    networks:
-      booking_network
-    depends_on:
-      - booking_back
-    command:
-      celery --app=src.tasks.celery_app:celery_instance beat -l INFO
+      - booking_network
 
   booking_nginx:
     restart:
@@ -81,7 +34,7 @@ services:
     image:
       nginx
     networks:
-      booking_network
+      - booking_network
     ports:
       - "80:80"
       - "443:443"
@@ -95,7 +48,7 @@ services:
   certbot:
     image: certbot/certbot:latest
     networks:
-      booking_network
+      - booking_network
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
@@ -104,7 +57,7 @@ volumes:
   pg-booking-data:
 
 networks:
-  - booking_network
+  booking_network:
 
 # default network with type bridge will be created
 # network and containers outer names start with current folder name
@@ -121,3 +74,6 @@ networks:
 # docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
 # docker-compose run --rm certbot renew
 # details in dockers_etc_info.md
+
+# ___
+# docker compose -f docker-compose-etc up
