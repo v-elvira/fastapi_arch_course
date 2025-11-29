@@ -92,7 +92,7 @@ class WrongEmailPasswordHTTPException(BaseHTTPException):
 
 class UserExistsHTTPException(BaseHTTPException):
     status_code = 409
-    detail = f'User with this email already exists'
+    detail = 'User with this email already exists'
 
 class NoFreeRoomHTTPException(BaseHTTPException):
     status_code = 409

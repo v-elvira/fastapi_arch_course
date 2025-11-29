@@ -48,7 +48,7 @@ class AuthService(BaseService):
             new_user_data = UserAdd(**new_data)
             try:
                 user = await self.db.users.add(new_user_data)
-            except ObjectExistsException as ex:
+            except ObjectExistsException:
                 raise UserExistsException
             await self.db.commit()
             return user

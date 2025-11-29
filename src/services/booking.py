@@ -1,4 +1,4 @@
-from src.exceptions import ObjectNotFoundException, RoomNotFoundException, NoFreeRoomException, \
+from src.exceptions import ObjectNotFoundException, RoomNotFoundException, \
     BookingNotFoundException, NotAllowedException, check_date_to_is_after_date_from
 from src.schemas.bookings import BookingAddBody, BookingAdd, BookingPatch
 from src.services.base import BaseService
