@@ -25,7 +25,7 @@ format-check:
 pytest:
   stage: test
   script:
-    - docker run --rm --network booking_network booking-api-image pytest -s -vv
+    - docker compose --file docker-compose-api.yml run --rm --network booking_network booking-api-image pytest -s -vv
 
 deploy:
   stage: deploy
