@@ -1,6 +1,7 @@
 stages:          # List of stages for jobs, and their order of execution
   - build
   - test
+  - migrate
   - deploy
 
 build:
@@ -25,7 +26,12 @@ format-check:
 pytest:
   stage: test
   script:
-    - docker compose --file docker-compose-api.yml run booking_back pytest -s -vv
+    - docker compose --file docker-compose-api.yml run --rm booking_back pytest -vv
+
+migrate:
+  stage: migrate
+  script:
+    - docker compose --file docker-compose-api.yml run --rm booking_back alembic upgrade head
 
 deploy:
   stage: deploy
