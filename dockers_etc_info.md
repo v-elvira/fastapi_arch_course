@@ -80,3 +80,34 @@ In three months:
 ````
 docker-compose run --rm certbot renew
 ````
+
+
+### GITLAB RUNNER
+```
+docker run -d --name gitlab-runner --restart=unless-stopped  \
+  -v /srv/gitlab-runner/config:/etc/gitlab-runner \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  gitlab/gitlab-runner:alpine
+```
+Register:
+get TOKEN-FROM-GITLAB: (Project, Settings -> CI/CD -> Runners -> Create project runner)
+
+```
+  docker run --rm -it \
+    -v /srv/gitlab-runner/config:/etc/gitlab-runner \
+    gitlab/gitlab-runner:alpine register \
+      --url https://gitlab.com \
+      --token TOKEN-FROM-GITLAB
+```
+DIALOG: executor: docker, image: docker:dind
+
+To enable starting real docker containers on server (not only inside gitlab-runner container):
+nano /srv/gitlab-runner/config/config.toml
+Replace volumes = ["/cache"] -> 
+```
+volumes = ["/var/run/docker.sock:/var/run/docker.sock", "/cache"]
+```
+
+#### FOR .env files:
+Gitlab Project, Settings -> CI/CD -> Variables -> Type (variable >> file) KEY=name, VALUE=file content
+
