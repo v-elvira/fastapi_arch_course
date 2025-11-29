@@ -74,8 +74,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot/www/:/var/www/certbot/:ro   # step 1: certbot will use it for verifications
+      - /nginx.conf:/etc/nginx/nginx.conf
+      - /certbot/www/:/var/www/certbot/:ro   # step 1: certbot will use it for verifications
       - ./certbot/conf/:/etc/nginx/ssl/:ro    # step 2: after certbot certonly run (see in .md) certs will be here
     depends_on:
       - booking_back
