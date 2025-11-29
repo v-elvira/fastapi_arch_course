@@ -104,7 +104,7 @@ volumes:
   pg-booking-data:
 
 networks:
-  booking_network
+  - booking_network
 
 # default network with type bridge will be created
 # network and containers outer names start with current folder name

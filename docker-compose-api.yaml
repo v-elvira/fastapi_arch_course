@@ -30,5 +30,5 @@ services:
       celery --app=src.tasks.celery_app:celery_instance beat -l INFO
 
 networks:
-  booking_network
+  - booking_network
 
