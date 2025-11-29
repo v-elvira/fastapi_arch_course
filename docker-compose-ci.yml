@@ -64,7 +64,7 @@ services:
 
   booking_nginx:
     restart:
-      unless-stopped
+      always
     image:
       nginx
     ports:
@@ -100,4 +100,4 @@ volumes:
 
 # docker-compose run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ --dry-run -d [domain-name]
 # docker-compose run --rm certbot renew
-# details in dockers_info.md
+# details in dockers_etc_info.md
